@@ -25,7 +25,7 @@ export class Bibliographer {
         };
         this.processor = new citeproc.Engine(sys, style, lang);
         this.items = {};
-        this.cited = [];
+        this.citations = [];
     }
 
     registerItems(references) {
@@ -35,17 +35,23 @@ export class Bibliographer {
     }
 
     cite(itemIdentifiers) {
-        let noteIndex = this.cited.length+1;
+        let noteIndex = this.citations.length+1;
         let citation = {
             citationItems: itemIdentifiers.map((item) => { return { id: item }; }),
             properties: { noteIndex: noteIndex }
         };
-        let [status, result] = this.processor.processCitationCluster(
+        let [status, results] = this.processor.processCitationCluster(
             citation,
-            this.cited,
+            this.citations.map((c) => [c[2], c[0]]),
             []
         );
-        this.cited.push([citation.citationID, noteIndex]);
-        return result[0][1];
+        for (let cited of results) {
+            let [pos, formatted, id] = cited;
+            this.citations[pos] = [pos+1, formatted, id];
+        }
+    }
+
+    getCitations() {
+        return this.citations.map((c) => c[1]);
     }
 }

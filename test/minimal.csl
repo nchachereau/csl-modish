@@ -5,8 +5,8 @@
     <id>7fe72cc2-b085-4ab9-9f88-c2170d0cc96b</id>
     <updated>2024-08-25T19:01:00+02:00</updated>
   </info>
-  <citation>
-    <layout delimiter="; ">
+  <citation disambiguate-add-year-suffix="true">
+    <layout suffix="." delimiter="; ">
       <choose>
         <if position="ibid">
           <text term="ibid"/>
@@ -17,6 +17,7 @@
             <date variable="issued" form="numeric" date-parts="year"/>
           </group>
         </else>
+      </choose>
     </layout>
   </citation>
 </style>

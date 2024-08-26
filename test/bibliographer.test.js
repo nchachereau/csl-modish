@@ -10,7 +10,7 @@ const style = fs.readFileSync(
     'utf-8'
 );
 
-const bibliography = [
+const items = [
     {
         'id': 'Book1',
         'type': 'book',
@@ -21,9 +21,9 @@ const bibliography = [
     {
         'id': 'Book2',
         'type': 'book',
-        'author': [ { 'family': 'Dupont', 'given': 'Jean'} ],
+        'author': [ { 'family': 'Smith', 'given': 'William'} ],
         'title': 'Book2',
-        'issued': { 'date-parts': [[ 2000, 1, 1 ]] }
+        'issued': { 'date-parts': [[ 2024, 1, 1 ]] }
     },
     {
         'id': 'Article1',
@@ -38,20 +38,24 @@ describe('Bibliographer', () => {
     let bibliographer;
     beforeEach(() => {
         bibliographer = new Bibliographer({style: style});
-        bibliographer.registerItems(bibliography);
+        bibliographer.registerItems(items);
     });
 
     it('returns formatted citations', () => {
-        let citation = bibliographer.cite(['Book1', 'Article1']);
-        expect(citation).to.equal('Smith 2024; Doe 1990');
-        citation = bibliographer.cite(['Book2']);
-        expect(citation).to.equal('Dupont 2000');
+        bibliographer.cite(['Book1', 'Article1']);
+        bibliographer.cite(['Book2']);
+        let citations = bibliographer.getCitations();
+        expect(citations).to.have.ordered.members([
+            'Smith 2024a; Doe 1990.',
+            'Smith 2024b.'
+        ]);
     });
 
     it('formats subsequent citations', () => {
         bibliographer.cite(['Book1']);
-        let citation = bibliographer.cite(['Book1']);
-        expect(citation).to.equal('ibid.');
+        bibliographer.cite(['Book1']);
+        let citations = bibliographer.getCitations();
+        expect(citations[1]).to.equal('ibid.');
     });
 
     it('throws an error when item does not exist', () => {
@@ -60,10 +64,11 @@ describe('Bibliographer', () => {
 
     it('supports defining the locale', () => {
         bibliographer = new Bibliographer({style: style, lang: 'de-DE'});
-        bibliographer.registerItems(bibliography);
+        bibliographer.registerItems(items);
         bibliographer.cite(['Book1']);
-        let citation = bibliographer.cite(['Book1']);
-        expect(citation).to.equal('ebd.');
+        bibliographer.cite(['Book1']);
+        let citations = bibliographer.getCitations();
+        expect(citations[1]).to.equal('ebd.');
     });
 
 });
