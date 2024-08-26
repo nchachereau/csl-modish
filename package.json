@@ -3,7 +3,10 @@
     "version": "0.0.1",
     "description": "Automated tests for your CSL styles",
     "type": "module",
-    "main": "index.js",
+    "exports": "./index.js",
+    "imports": {
+        "#*": "./src/*"
+    },
     "scripts": {
         "test": "mocha"
     },

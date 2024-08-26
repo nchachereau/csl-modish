@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info>
+    <title>Minimal style (for tests)</title>
+    <id>7fe72cc2-b085-4ab9-9f88-c2170d0cc96b</id>
+    <updated>2024-08-25T19:01:00+02:00</updated>
+  </info>
+  <citation>
+    <layout delimiter="; ">
+      <choose>
+        <if position="ibid">
+          <text term="ibid"/>
+        </if>
+        <else>
+          <group delimiter=" ">
+            <names variable="author"><name form="short"/></names>
+            <date variable="issued" form="numeric" date-parts="year"/>
+          </group>
+        </else>
+    </layout>
+  </citation>
+</style>
