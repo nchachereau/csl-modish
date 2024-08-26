@@ -1,4 +1,4 @@
-export class TestSuite {
+export class Specification {
     constructor(specification) {
         this.inputs = [];
         for (let rawInput of specification.input) {
