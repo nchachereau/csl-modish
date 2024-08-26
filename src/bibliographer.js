@@ -15,13 +15,7 @@ export class Bibliographer {
                 );
                 return fs.readFileSync(localeFilePath, 'utf-8');
             },
-            retrieveItem: (id) => {
-                if (id in this.items) {
-                    return this.items[id];
-                } else {
-                    throw new Error(`Item ${id} not registered`);
-                }
-            }
+            retrieveItem: (id) => this.items[id]
         };
         this.processor = new citeproc.Engine(sys, style, lang);
         this.items = {};
@@ -34,10 +28,15 @@ export class Bibliographer {
         }
     }
 
-    cite(itemIdentifiers) {
+    cite(items) {
         let noteIndex = this.citations.length+1;
+        for (let item of items) {
+            if (!item.id in this.items) {
+                throw new Error(`Item ${item.id} not registered. Pass it to registerItems() first.`);
+            }
+        }
         let citation = {
-            citationItems: itemIdentifiers.map((item) => { return { id: item }; }),
+            citationItems: items,
             properties: { noteIndex: noteIndex }
         };
         let [status, results] = this.processor.processCitationCluster(

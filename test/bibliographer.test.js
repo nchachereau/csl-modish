@@ -42,8 +42,8 @@ describe('Bibliographer', () => {
     });
 
     it('returns formatted citations', () => {
-        bibliographer.cite(['Book1', 'Article1']);
-        bibliographer.cite(['Book2']);
+        bibliographer.cite([{ id: 'Book1' }, { id: 'Article1' } ]);
+        bibliographer.cite([{ id: 'Book2' } ]);
         let citations = bibliographer.getCitations();
         expect(citations).to.have.ordered.members([
             'Smith 2024a; Doe 1990.',
@@ -52,27 +52,27 @@ describe('Bibliographer', () => {
     });
 
     it('formats subsequent citations', () => {
-        bibliographer.cite(['Book1']);
-        bibliographer.cite(['Book1']);
+        bibliographer.cite([{ id: 'Book1' }]);
+        bibliographer.cite([{ id: 'Book1' } ]);
         let citations = bibliographer.getCitations();
         expect(citations[1]).to.equal('ibid.');
     });
 
     it('throws an error when item does not exist', () => {
-        expect(() => bibliographer.cite('NoSuchBook')).to.throw();
+        expect(() => bibliographer.cite({ id: 'NoSuchBook' })).to.throw();
     });
 
     it('supports defining the locale', () => {
         bibliographer = new Bibliographer({style: style, lang: 'de-DE'});
         bibliographer.registerItems(items);
-        bibliographer.cite(['Book1']);
-        bibliographer.cite(['Book1']);
+        bibliographer.cite([{ id: 'Book1' }]);
+        bibliographer.cite([{ id: 'Book1' }]);
         let citations = bibliographer.getCitations();
         expect(citations[1]).to.equal('ebd.');
     });
 
     it('formats a bibliography with cited items', () => {
-        bibliographer.cite(['Book1', 'Book2', 'Article1']);
+        bibliographer.cite([{ id: 'Book1' }, { id: 'Book2' }, { id: 'Article1' }]);
         let bibliography = bibliographer.getBibliography();
         expect(bibliography).to.have.ordered.members([
             'John Smith, <i>Book1</i>, 2024a.',
