@@ -71,4 +71,14 @@ describe('Bibliographer', () => {
         expect(citations[1]).to.equal('ebd.');
     });
 
+    it('formats a bibliography with cited items', () => {
+        bibliographer.cite(['Book1', 'Book2', 'Article1']);
+        let bibliography = bibliographer.getBibliography();
+        expect(bibliography).to.have.ordered.members([
+            'John Smith, <i>Book1</i>, 2024a.',
+            'William Smith, <i>Book2</i>, 2024b.',
+            'Jane Doe, Article1, 1990.'
+        ]);
+    });
+
 });

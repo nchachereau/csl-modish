@@ -54,4 +54,10 @@ export class Bibliographer {
     getCitations() {
         return this.citations.map((c) => c[1]);
     }
+
+    getBibliography() {
+        let [params, entries] = this.processor.makeBibliography();
+        const pattern = /<div class="csl-entry">(.+)<\/div>/;
+        return entries.map((entry) => entry.trim().replace(pattern, '$1'));
+    }
 }

@@ -20,4 +20,19 @@
       </choose>
     </layout>
   </citation>
+  <bibliography>
+    <layout suffix=".">
+      <group delimiter=", ">
+        <names variable="author"/>
+        <choose>
+          <if type="book">
+            <text variable="title" font-style="italic"/>
+          </if>
+          <else>
+            <text variable="title"/>
+          </else>
+        </choose>
+        <date variable="issued" form="numeric" date-parts="year"/>
+    </layout>
+  </bibliography>
 </style>
