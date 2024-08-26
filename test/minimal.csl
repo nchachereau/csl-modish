@@ -15,6 +15,7 @@
           <group delimiter=" ">
             <names variable="author"><name form="short"/></names>
             <date variable="issued" form="numeric" date-parts="year"/>
+            <text variable="locator"/>
           </group>
         </else>
       </choose>

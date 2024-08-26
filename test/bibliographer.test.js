@@ -58,6 +58,12 @@ describe('Bibliographer', () => {
         expect(citations[1]).to.equal('ibid.');
     });
 
+    it('formats a citation with a locator', () => {
+        bibliographer.cite([{ id: 'Book1', label: 'page', locator: '102-103' }]);
+        let citations = bibliographer.getCitations();
+        expect(citations[0]).to.equal('Smith 2024 102–103.');
+    });
+
     it('throws an error when item does not exist', () => {
         expect(() => bibliographer.cite({ id: 'NoSuchBook' })).to.throw();
     });
