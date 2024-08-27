@@ -1,14 +1,13 @@
 import citeproc from 'citeproc';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'url';
 
 export class Bibliographer {
     constructor({style, lang='en'}) {
         const sys = {
             retrieveLocale: (l) => {
                 let localeFilePath = path.join(
-                    path.dirname(fileURLToPath(import.meta.url)),
+                    import.meta.dirname,
                     '..',
                     'locales',
                     `locales-${l}.xml`

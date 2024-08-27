@@ -1,12 +1,11 @@
 import { expect } from 'chai';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'url';
 
 import { Bibliographer } from '#bibliographer.js';
 
 const style = fs.readFileSync(
-    path.join(path.dirname(fileURLToPath(import.meta.url)), 'minimal.csl'),
+    path.join(import.meta.dirname, 'minimal.csl'),
     'utf-8'
 );
 
