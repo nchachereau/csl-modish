@@ -1,8 +1,9 @@
-import { describe, it } from "jsr:@std/testing/bdd";
-import { assertSpyCall, assertSpyCalls, spy, } from "jsr:@std/testing/mock";
+import { describe, it, beforeEach } from "jsr:@std/testing/bdd";
+import { assertSpyCall, assertSpyCalls, returnsNext, stub } from "jsr:@std/testing/mock";
 import { expect } from 'npm:chai@5';
 
 import { parseInput, test } from '../src/main.js';
+import { Bibliographer } from '../src/bibliographer.js';
 
 describe('function parseInput()', () => {
 
@@ -34,35 +35,44 @@ describe('function test()', () => {
     it('informs that all citations matched their expected output', () => {
         let input = [ 'Book1', 'Book2' ];
         let citations = [ 'Smith 2024a.', 'Smith 2024b.' ];
-        let mockBibliographer = {
-            cite(citations) {
-            },
-            getCitations() {
-                return ['Smith 2024a.', 'Smith 2024b.'];
-            }
-        };
-        const citeSpy = spy(mockBibliographer, 'cite');
-        const getCitationsSpy = spy(mockBibliographer, 'getCitations');
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
+            ['Smith 2024a.', 'Smith 2024b.']
+        ]));
 
-        let [passed, failures] = test({input: input, citations: citations}, mockBibliographer);
+        let passed, failures;
+        try {
+            [passed, failures] = test({input: input, citations: citations});
+        } finally {
+            bibliographerLoadStyleStub.restore();
+            citeStub.restore();
+            getCitationsStub.restore();
+        }
+
         expect(passed).to.be.true;
         expect(failures).to.be.empty;
-        assertSpyCalls(citeSpy, 2);
-        assertSpyCalls(getCitationsSpy, 1);
+        assertSpyCalls(citeStub, 2);
+        assertSpyCalls(getCitationsStub, 1);
     });
 
     it('reports citations not matching their expected output', () => {
         let input = [ 'Book1', 'Book2' ];
         let citations = [ 'Smith 2012.', 'Smith 2015.' ];
-        let mockBibliographer = {
-            cite(citations) {
-            },
-            getCitations() {
-                return ['Smith 2012.', 'Doe 1995.'];
-            }
-        };
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
+            ['Smith 2012.', 'Doe 1995.']
+        ]));
 
-        let [passed, failures] = test({input: input, citations: citations}, mockBibliographer);
+        let passed, failures;
+        try {
+            [passed, failures] = test({input: input, citations: citations});
+        } finally {
+            bibliographerLoadStyleStub.restore();
+            citeStub.restore();
+            getCitationsStub.restore();
+        }
         expect(passed).to.be.false;
         expect(failures).to.have.lengthOf(1);
         expect(failures[0]).to.eql({expected: 'Smith 2015.', actual: 'Doe 1995.'});
@@ -71,48 +81,67 @@ describe('function test()', () => {
     it('reports that the bibliography matches the expected output', () => {
         let input = [ 'Book1', 'Book2' ];
         let bibliography = ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.'];
-        let mockBibliographer = {
-            cite(citations) {
-            },
-            getCitations() {
-                return ['Smith 2024.', 'Doe 1990.'];
-            },
-            getBibliography() {
-                return ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.'];
-            }
-        };
-        const citeSpy = spy(mockBibliographer, 'cite');
-        const getBibliographySpy = spy(mockBibliographer, 'getBibliography');
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
+            ['Smith 2024.', 'Doe 1990.']
+        ]));
+        const getBibliographyStub = stub(Bibliographer.prototype, 'getBibliography', returnsNext([
+            ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.']
+        ]));
 
-        let [passed, failures] = test({input: input, bibliography: bibliography},
-                                      mockBibliographer);
+        let passed, failures;
+        try {
+            [passed, failures] = test({input: input, bibliography: bibliography});
+        } finally {
+            bibliographerLoadStyleStub.restore();
+            citeStub.restore();
+            getCitationsStub.restore();
+            getBibliographyStub.restore();
+        }
         expect(passed).to.be.true;
         expect(failures).to.be.empty;
-        assertSpyCalls(citeSpy, 2);
-        assertSpyCalls(getBibliographySpy, 1);
     });
 
     it('reports bibliography not matching expected output', () => {
         let input = [ 'Book1', 'Book2' ];
         let bibliography = ['Jane Doe, Book2, 1990.', 'John Smith, Book1, 2024.'];
-        let mockBibliographer = {
-            cite(citations) {
-            },
-            getCitations() {
-                return ['Smith 2024.', 'Doe 1990.'];
-            },
-            getBibliography() {
-                return ['Wrong Name, Other Book, 1990.', 'John Smith, Book1, 2024.'];
-            }
-        };
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
+            ['Smith 2024.', 'Doe 1990.']
+        ]));
+        const getBibliographyStub = stub(Bibliographer.prototype, 'getBibliography', returnsNext([
+            ['Wrong Name, Other Book, 1990.', 'John Smith, Book1, 2024.']
+        ]));
 
-        let [passed, failures] = test({input: input, bibliography: bibliography},
-                                      mockBibliographer);
+        let passed, failures;
+        try {
+            [passed, failures] = test({input: input, bibliography: bibliography});
+        } finally {
+            bibliographerLoadStyleStub.restore();
+            citeStub.restore();
+            getCitationsStub.restore();
+            getBibliographyStub.restore();
+        }
         expect(passed).to.be.false;
         expect(failures).to.have.lengthOf(1);
         expect(failures[0]).to.eql({
             expected: '- Jane Doe, Book2, 1990.\n- John Smith, Book1, 2024.',
             actual: '- Wrong Name, Other Book, 1990.\n- John Smith, Book1, 2024.'
+        });
+    });
+
+    it('loads the style specified in the specification', () => {
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        let input = [];
+        try {
+            test({input: input, style: 'test.csl'});
+        } finally {
+            bibliographerLoadStyleStub.restore();
+        }
+        assertSpyCall(bibliographerLoadStyleStub, 0, {
+            args: ['test.csl']
         });
     });
 

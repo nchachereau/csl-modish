@@ -1,3 +1,5 @@
+import { Bibliographer } from './bibliographer.js';
+
 const LOCATORS = {
     'bk.': 'book',
     'bks.': 'book',
@@ -62,8 +64,10 @@ export function parseInput(inputs) {
     return parsedInputs;
 }
 
-export function test(specification, bibliographer) {
+export function test(specification) {
     let inputs = parseInput(specification.input);
+    let bibliographer = new Bibliographer();
+    bibliographer.loadStyle(specification.style);
     for (let input of inputs) {
         bibliographer.cite(inputs);
     }
