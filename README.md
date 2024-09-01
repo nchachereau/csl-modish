@@ -5,8 +5,6 @@
 Modish runs easy-to-write tests to check the output of a CSL bibliographic
 style.
 
-<hr />
-
 </div>
 
 - The [Citation Style Language](https://citationstyles.org/) makes it possible to
@@ -18,17 +16,7 @@ style.
 
 ## Installation
 
-Install as a development dependency in your CSL project directory:
-
-```sh
-npm install csl-modish --save-dev
-```
-
-Alternatively, install globally:
-
-```sh
-npm install --global csl-modish
-```
+(tbd)
 
 ## Getting started
 
@@ -67,8 +55,8 @@ npm install --global csl-modish
 
 ## Usage
 
-(tbc)
+(tbd)
 
 ## Test Files
 
-(tbc)
+(tbd)

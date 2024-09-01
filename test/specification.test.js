@@ -1,6 +1,7 @@
-import { expect } from 'chai';
+import { describe, it } from "jsr:@std/testing/bdd";
+import { expect } from 'npm:chai@5';
 
-import { Specification } from '#specification.js';
+import { Specification } from '../src/specification.js';
 
 describe('Specification', () => {
 

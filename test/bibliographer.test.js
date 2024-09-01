@@ -1,8 +1,9 @@
-import { expect } from 'chai';
+import { describe, it, beforeEach } from "jsr:@std/testing/bdd";
+import { expect } from 'npm:chai@5';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Bibliographer } from '#bibliographer.js';
+import { Bibliographer } from '../src/bibliographer.js';
 
 const style = fs.readFileSync(
     path.join(import.meta.dirname, 'minimal.csl'),
