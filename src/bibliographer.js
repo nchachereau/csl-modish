@@ -3,7 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export class Bibliographer {
-    constructor({style, lang='en'}) {
+    constructor() {
+        this.items = {};
+        this.citations = [];
+    }
+
+    loadStyle(stylePath, lang='en') {
         const sys = {
             retrieveLocale: (l) => {
                 let localeFilePath = path.join(
@@ -16,9 +21,8 @@ export class Bibliographer {
             },
             retrieveItem: (id) => this.items[id]
         };
+        const style = fs.readFileSync(stylePath, 'utf-8');
         this.processor = new citeproc.Engine(sys, style, lang);
-        this.items = {};
-        this.citations = [];
     }
 
     registerItems(references) {

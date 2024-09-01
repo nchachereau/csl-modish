@@ -5,10 +5,7 @@ import path from 'node:path';
 
 import { Bibliographer } from '../src/bibliographer.js';
 
-const style = fs.readFileSync(
-    path.join(import.meta.dirname, 'minimal.csl'),
-    'utf-8'
-);
+const style = path.join(import.meta.dirname, 'minimal.csl');
 
 const items = [
     {
@@ -37,7 +34,8 @@ const items = [
 describe('Bibliographer', () => {
     let bibliographer;
     beforeEach(() => {
-        bibliographer = new Bibliographer({style: style});
+        bibliographer = new Bibliographer();
+        bibliographer.loadStyle(style);
         bibliographer.registerItems(items);
     });
 
@@ -69,7 +67,8 @@ describe('Bibliographer', () => {
     });
 
     it('supports defining the locale', () => {
-        bibliographer = new Bibliographer({style: style, lang: 'de-DE'});
+        bibliographer = new Bibliographer();
+        bibliographer.loadStyle(style, 'de-DE');
         bibliographer.registerItems(items);
         bibliographer.cite([{ id: 'Book1' }]);
         bibliographer.cite([{ id: 'Book1' }]);
