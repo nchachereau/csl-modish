@@ -65,32 +65,38 @@ export function parseInput(inputs) {
 }
 
 export function test(specification) {
-    let inputs = parseInput(specification.input);
-    let bibliographer = new Bibliographer();
-    bibliographer.loadStyle(specification.style);
-    for (let input of inputs) {
-        bibliographer.cite(inputs);
-    }
+    let tests = specification.tests ?? [specification];
+
+    let passed = false;
     let failures = [];
-    if ('citations' in specification) {
-        let citations = bibliographer.getCitations();
-        for (let [i, outputCitation] of citations.entries()) {
-            let expected = specification.citations[i];
-            if (outputCitation != expected) {
-                failures.push({expected: expected, actual: outputCitation});
+    for (let testCase of tests) {
+        let inputs = parseInput(testCase.input ?? specification.input);
+        let bibliographer = new Bibliographer();
+        bibliographer.loadStyle(testCase.style ?? specification.style);
+        for (let input of inputs) {
+            bibliographer.cite(inputs);
+        }
+        if ('citations' in testCase) {
+            let outputCitations = bibliographer.getCitations();
+            let expectedCitations = testCase.citations ?? specification.citations;
+            for (let [i, outputCitation] of outputCitations.entries()) {
+                let expected = expectedCitations[i];
+                if (outputCitation != expected) {
+                    failures.push({expected: expected, actual: outputCitation});
+                }
+            }
+        }
+        if ('bibliography' in testCase) {
+            let outputBibliography = bibliographer.getBibliography();
+            let expectedBiblio = testCase.bibliography ?? specification.bibliography;
+            if (expectedBiblio.length !== outputBibliography.length ||
+                !(outputBibliography.every((val, i) => val === expectedBiblio[i]))) {
+                let expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
+                let outputStr = outputBibliography.map((s) => `- ${s}`).join('\n');
+                failures.push({expected: expectedStr, actual: outputStr});
             }
         }
     }
-    if ('bibliography' in specification) {
-        let outputBibliography = bibliographer.getBibliography();
-        let expectedBiblio = specification.bibliography;
-        if (expectedBiblio.length !== outputBibliography.length ||
-            !(outputBibliography.every((val, i) => val === expectedBiblio[i]))) {
-            let expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
-            let outputStr = outputBibliography.map((s) => `- ${s}`).join('\n');
-            failures.push({expected: expectedStr, actual: outputStr});
-        }
-    }
-    let passed = (failures.length == 0) ? true : false;
+    passed = (failures.length == 0) ? true : false;
     return [passed, failures];
 }

@@ -145,4 +145,26 @@ describe('function test()', () => {
         });
     });
 
+    it('supports series of tests', () => {
+        let input = [ 'Book1', 'Book2' ];
+        let citations = [ 'Smith 2012.', 'Smith 2015.' ];
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
+            ['Smith 2012.', 'Doe 1995.']
+        ]));
+
+        let passed, failures;
+        try {
+            [passed, failures] = test({tests: [{input: input, citations: citations}]});
+        } finally {
+            bibliographerLoadStyleStub.restore();
+            citeStub.restore();
+            getCitationsStub.restore();
+        }
+        expect(passed).to.be.false;
+        expect(failures).to.have.lengthOf(1);
+        expect(failures[0]).to.eql({expected: 'Smith 2015.', actual: 'Doe 1995.'});
+    });
+
 });
