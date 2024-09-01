@@ -67,12 +67,24 @@ export function test(specification, bibliographer) {
     for (let input of inputs) {
         bibliographer.cite(inputs);
     }
-    let citations = bibliographer.getCitations();
     let failures = [];
-    for (let [i, outputCitation] of citations.entries()) {
-        let expected = specification.citations[i];
-        if (outputCitation != expected) {
-            failures.push({expected: expected, actual: outputCitation});
+    if ('citations' in specification) {
+        let citations = bibliographer.getCitations();
+        for (let [i, outputCitation] of citations.entries()) {
+            let expected = specification.citations[i];
+            if (outputCitation != expected) {
+                failures.push({expected: expected, actual: outputCitation});
+            }
+        }
+    }
+    if ('bibliography' in specification) {
+        let outputBibliography = bibliographer.getBibliography();
+        let expectedBiblio = specification.bibliography;
+        if (expectedBiblio.length !== outputBibliography.length ||
+            !(outputBibliography.every((val, i) => val === expectedBiblio[i]))) {
+            let expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
+            let outputStr = outputBibliography.map((s) => `- ${s}`).join('\n');
+            failures.push({expected: expectedStr, actual: outputStr});
         }
     }
     let passed = (failures.length == 0) ? true : false;

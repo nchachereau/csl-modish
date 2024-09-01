@@ -1,6 +1,6 @@
 {
     "name": "@csl-modish/modish",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "exports": "./src/main.js",
     "imports": {
         "citeproc": "npm:citeproc@2"
