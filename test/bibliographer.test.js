@@ -3,7 +3,7 @@ import { expect } from 'npm:chai@5';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Bibliographer } from '../src/bibliographer.js';
+import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.js';
 
 const style = path.join(import.meta.dirname, 'minimal.csl');
 
@@ -63,7 +63,7 @@ describe('Bibliographer', () => {
     });
 
     it('throws an error when item does not exist', () => {
-        expect(() => bibliographer.cite({ id: 'NoSuchBook' })).to.throw();
+        expect(() => bibliographer.cite([{ id: 'NoSuchBook' }])).to.throw(UnregisteredItemError);
     });
 
     it('supports defining the locale', () => {

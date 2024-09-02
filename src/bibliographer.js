@@ -43,7 +43,7 @@ export class Bibliographer {
     cite(items) {
         let noteIndex = this.citations.length+1;
         for (let item of items) {
-            if (!item.id in this.items) {
+            if (!(item.id in this.items)) {
                 throw new UnregisteredItemError(item.id);
             }
         }
