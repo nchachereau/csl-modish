@@ -97,7 +97,17 @@ export function test(specification) {
         }
 
         for (let input of inputs) {
-            bibliographer.cite(input);
+            try {
+                bibliographer.cite(input);
+            } catch(err) {
+                if (err.name == 'UnregisteredItemError') {
+                    failures.push({
+                        error: `No reference ${err.erroneousIdentifier} could be found in references.json.`
+                    });
+                } else {
+                    throw err;
+                }
+            }
         }
         if ('citations' in testCase) {
             let outputCitations = bibliographer.getCitations();

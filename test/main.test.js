@@ -3,7 +3,7 @@ import { assertSpyCall, assertSpyCalls, returnsNext, stub } from "jsr:@std/testi
 import { expect } from 'npm:chai@5';
 
 import { parseInput, test } from '../src/main.js';
-import { Bibliographer } from '../src/bibliographer.js';
+import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.js';
 
 describe('function parseInput()', () => {
 
@@ -177,6 +177,27 @@ describe('function test()', () => {
         let [passed, failures] = test({input: [], style: 'xtestz.csl'});
         expect(passed).to.be.false;
         expect(failures[0]).to.have.property('error');
+    });
+
+    it('reports a failure when identifier not found in references', () => {
+        let input = ['Book1'];
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([new UnregisteredItemError(input[0])]));
+
+        let passed, failures;
+        try {
+            [passed, failures] = test({
+                style: 'somestyle.csl',
+                input: input,
+                citations: ['Smith 2012.']
+            });
+        } finally {
+            bibliographerLoadStyleStub.restore();
+            citeStub.restore();
+        }
+        expect(passed).to.be.false;
+        expect(failures[0]).to.have.property('error');
+        expect(failures[0].error).to.have.string(input[0]);
     });
 
     it('supports series of tests', () => {

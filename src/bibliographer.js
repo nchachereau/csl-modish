@@ -2,6 +2,15 @@ import citeproc from 'citeproc';
 import fs from 'node:fs';
 import path from 'node:path';
 
+export class UnregisteredItemError extends Error {
+    constructor(itemIdentifier) {
+        let message = `Item ${itemIdentifier} not registered. Pass it to registerItems() first.`;
+        super(message);
+        this.name = "UnregisteredItemError";
+        this.erroneousIdentifier = itemIdentifier;
+    }
+}
+
 export class Bibliographer {
     constructor() {
         this.items = {};
@@ -35,7 +44,7 @@ export class Bibliographer {
         let noteIndex = this.citations.length+1;
         for (let item of items) {
             if (!item.id in this.items) {
-                throw new Error(`Item ${item.id} not registered. Pass it to registerItems() first.`);
+                throw new UnregisteredItemError(item.id);
             }
         }
         let citation = {
