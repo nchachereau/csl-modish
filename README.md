@@ -75,13 +75,17 @@ Test files are written in YAML, and need to specify:
 - and the expected output for these items when they are formatted as `citations`
   and/or `bibliography`.
 
-The **path** is a simple string, relative to where you run the command (typically
-the root of your project):
+### style
+
+`style` specifies the path of the CSL file, relative to where you run the
+command (typically the root of your project):
 ```yaml
 style: style.csl
 ```
 
-The **input** is a list of identifiers:
+### input
+
+The input is a list of identifiers:
 ```yaml
 input:
 - ThompsonMaking p. 128
@@ -97,6 +101,8 @@ the example. All [locators from the CSL specification](https://docs.citationstyl
 are supported, in full or in abbreviated form (use `sub verso` and not
 `sub-verso`). To include several references in the same citation (e.g. to test
 separators), connect them by semicolons, as in the example.
+
+### output: citations and bibliography
 
 It is possible to test both citations and bibliography, or only either of them,
 but at least one must be specified in a test.
@@ -118,6 +124,8 @@ bibliography:
 - Piketty, T. (2014). <i>Capital in the Twenty-First Century</i>. Harvard University Press
 - Thompson, E. P. (1991). <i>The Making of the English working class</i>. Penguin Books. (Original work published 1963)
 ```
+
+### several tests in the same file
 
 Alternatively, it is possible to specify a series of tests in the same file.
 This is especially useful if the tests use the same style with different
