@@ -78,7 +78,7 @@ export function test(specification) {
         }
         if ('citations' in testCase) {
             let outputCitations = bibliographer.getCitations();
-            let expectedCitations = testCase.citations ?? specification.citations;
+            let expectedCitations = testCase.citations;
             for (let [i, outputCitation] of outputCitations.entries()) {
                 let expected = expectedCitations[i];
                 if (outputCitation != expected) {
@@ -88,7 +88,7 @@ export function test(specification) {
         }
         if ('bibliography' in testCase) {
             let outputBibliography = bibliographer.getBibliography();
-            let expectedBiblio = testCase.bibliography ?? specification.bibliography;
+            let expectedBiblio = testCase.bibliography;
             if (expectedBiblio.length !== outputBibliography.length ||
                 !(outputBibliography.every((val, i) => val === expectedBiblio[i]))) {
                 let expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
