@@ -176,6 +176,7 @@ describe('function test()', () => {
     it('reports a failure when style file does not exist', () => {
         let [passed, failures] = test({input: [], style: 'xtestz.csl'});
         expect(passed).to.be.false;
+        expect(failures[0]).to.have.property('error');
     });
 
     it('supports series of tests', () => {

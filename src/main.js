@@ -74,12 +74,12 @@ export function test(specification) {
         // if the test case does not specify the input, use the global definition
         let inputs = parseInput(testCase.input ?? specification.input);
         let bibliographer = new Bibliographer();
+        // if the test case does not specify the style, use the globally defined style
+        let style = testCase.style ?? specification.style;
         try {
-            // if the test case does not specify the style, use the globally defined style
-            let style = testCase.style ?? specification.style;
             bibliographer.loadStyle(style);
         } catch(err) {
-            if (err.code == 'NOENT') {
+            if (err.code == 'ENOENT') {
                 failures.push({
                     error: `No such CSL file: ${style}.`
                 });
