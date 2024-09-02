@@ -134,6 +134,32 @@ describe('function test()', () => {
         });
     });
 
+    it('reports failure if neither citation nor bibliography are specified', () => {
+        let input = [ 'Book1', 'Book2' ];
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
+            ['Smith 2024.', 'Doe 1990.']
+        ]));
+        const getBibliographyStub = stub(Bibliographer.prototype, 'getBibliography', returnsNext([
+            ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.']
+        ]));
+
+        let passed, failures;
+        try {
+            [passed, failures] = test({input: input});
+        } finally {
+            bibliographerLoadStyleStub.restore();
+            citeStub.restore();
+            getCitationsStub.restore();
+            getBibliographyStub.restore();
+        }
+        expect(passed).to.be.false;
+        expect(failures[0]).to.eql({
+            error: 'Please specify expected output (citations and/or bibliography) in your test(s).'
+        });
+    });
+
     it('loads the style specified in the specification', () => {
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         let input = [];

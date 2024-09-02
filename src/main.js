@@ -73,6 +73,13 @@ export function test(specification) {
         let inputs = parseInput(testCase.input ?? specification.input);
         let bibliographer = new Bibliographer();
         bibliographer.loadStyle(testCase.style ?? specification.style);
+        if (!('citations' in testCase || 'bibliography' in testCase)) {
+            failures.push({
+                error:
+                'Please specify expected output (citations and/or bibliography) in your test(s).'
+            });
+            continue;
+        }
         for (let input of inputs) {
             bibliographer.cite(input);
         }
