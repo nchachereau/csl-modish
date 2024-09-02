@@ -199,9 +199,22 @@ describe('function test()', () => {
     });
 
     it('reports a failure when style file does not exist', () => {
-        let [passed, failures] = test({input: [], style: 'xtestz.csl'}, []);
+        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([]));
+        let passed, failures;
+        try {
+            [passed, failures] = test(
+                {
+                    style: 'xtestz.csl',
+                    input: [ 'Book1' ],
+                    citations: [ 'Smith 2012.' ]
+                },
+                []);
+        } finally {
+            citeStub.restore();
+        }
         expect(passed).to.be.false;
         expect(failures[0]).to.have.property('error');
+        assertSpyCalls(citeStub, 0);
     });
 
     it('reports a failure when identifier not found in references', () => {

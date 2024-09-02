@@ -83,6 +83,7 @@ export function test(specification, items) {
                 failures.push({
                     error: `No such CSL file: ${style}.`
                 });
+                continue;
             } else {
                 throw err;
             }
