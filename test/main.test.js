@@ -173,6 +173,11 @@ describe('function test()', () => {
         });
     });
 
+    it('reports a failure when style file does not exist', () => {
+        let [passed, failures] = test({input: [], style: 'xtestz.csl'});
+        expect(passed).to.be.false;
+    });
+
     it('supports series of tests', () => {
         let localInput = [ 'Book1', 'Book2' ];
         let globalInput = [ 'Wrong1' ];

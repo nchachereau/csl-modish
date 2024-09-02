@@ -65,14 +65,27 @@ export function parseInput(inputs) {
 }
 
 export function test(specification) {
+    // if `tests` is not specified, assume that there is only one global test
     let tests = specification.tests ?? [specification];
 
     let passed = false;
     let failures = [];
     for (let testCase of tests) {
+        // if the test case does not specify the input, use the global definition
         let inputs = parseInput(testCase.input ?? specification.input);
         let bibliographer = new Bibliographer();
-        bibliographer.loadStyle(testCase.style ?? specification.style);
+        try {
+            // if the test case does not specify the style, use the globally defined style
+            let style = testCase.style ?? specification.style;
+            bibliographer.loadStyle(style);
+        } catch(err) {
+            if (err.code == 'NOENT') {
+                failures.push({
+                    error: `No such CSL file: ${style}.`
+                });
+            }
+        }
+
         if (!('citations' in testCase || 'bibliography' in testCase)) {
             failures.push({
                 error:
@@ -80,6 +93,7 @@ export function test(specification) {
             });
             continue;
         }
+
         for (let input of inputs) {
             bibliographer.cite(input);
         }
