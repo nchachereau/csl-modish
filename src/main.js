@@ -1,4 +1,9 @@
+import { Command } from '@cliffy/command';
 import { Bibliographer } from './bibliographer.js';
+import metadata from '../deno.json' with { type: 'json' };
+
+import { parse as parseYAML } from "jsr:@std/yaml";
+import fs from 'node:fs';
 
 const LOCATORS = {
     'bk.': 'book',
@@ -134,4 +139,21 @@ export function test(specification, items) {
     }
     passed = (failures.length == 0) ? true : false;
     return [passed, failures];
+}
+
+function testCommand(options, testFile) {
+    const references = JSON.parse(fs.readFileSync('tests/references.json', 'utf-8'));
+    const spec = parseYAML(fs.readFileSync(testFile, 'utf-8'));
+    console.log(test(spec, references));
+}
+
+if (import.meta.main) {
+    await new Command()
+        .name('modish')
+        .description(metadata.description)
+        .version(metadata.version)
+        .command('test')
+        .arguments('<test_file>')
+        .action(testCommand)
+        .parse(Deno.args);
 }

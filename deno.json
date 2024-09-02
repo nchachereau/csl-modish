@@ -1,8 +1,10 @@
 {
     "name": "@csl-modish/modish",
-    "version": "0.4.4",
+    "description": "Automated tests for your CSL styles",
+    "version": "0.5.0",
     "exports": "./src/main.js",
     "imports": {
-        "citeproc": "npm:citeproc@2"
+        "citeproc": "npm:citeproc@2",
+        "@cliffy/command": "jsr:@cliffy/command@1.0.0-rc.5"
     }
 }
