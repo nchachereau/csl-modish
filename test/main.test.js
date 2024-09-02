@@ -52,6 +52,8 @@ describe('function test()', () => {
 
         expect(passed).to.be.true;
         expect(failures).to.be.empty;
+        assertSpyCall(citeStub, 0, { args: [ [ { id: 'Book1' } ] ]});
+        assertSpyCall(citeStub, 1, { args: [ [ { id: 'Book2' } ] ]});
         assertSpyCalls(citeStub, 2);
         assertSpyCalls(getCitationsStub, 1);
     });

@@ -74,7 +74,7 @@ export function test(specification) {
         let bibliographer = new Bibliographer();
         bibliographer.loadStyle(testCase.style ?? specification.style);
         for (let input of inputs) {
-            bibliographer.cite(inputs);
+            bibliographer.cite(input);
         }
         if ('citations' in testCase) {
             let outputCitations = bibliographer.getCitations();
