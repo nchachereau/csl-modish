@@ -1,5 +1,5 @@
 import { describe, it, beforeEach } from "jsr:@std/testing/bdd";
-import { assertSpyCall, assertSpyCalls, returnsNext, stub } from "jsr:@std/testing/mock";
+import { assertSpyCall, assertSpyCalls, returnsNext, stub, spy } from "jsr:@std/testing/mock";
 import { expect } from 'npm:chai@5';
 
 import { parseInput, test } from '../src/main.js';
@@ -32,6 +32,31 @@ describe('function parseInput()', () => {
 
 describe('function test()', () => {
 
+    it('registers items to cite', () => {
+        let items = [
+            { 'id': 'Book1', 'type': 'book',
+              'author': [ { 'family': 'Smith', 'given': 'John'} ],
+              'title': 'Book1', 'issued': { 'date-parts': [[ 2024, 1, 1 ]] }
+            },
+            {
+                'id': 'Book2', 'type': 'book',
+                'author': [ { 'family': 'Smith', 'given': 'William'} ],
+                'title': 'Book2', 'issued': { 'date-parts': [[ 2024, 1, 1 ]] }
+            },
+        ];
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        const bibliographerRegisterItemsSpy = spy(Bibliographer.prototype, 'registerItems');
+
+        try {
+            test({input: [], style: 'test.csl'}, items);
+        } finally {
+            bibliographerLoadStyleStub.restore();
+        }
+        assertSpyCall(bibliographerRegisterItemsSpy, 0, {
+            args: [ items ]
+        });
+    });
+
     it('informs that all citations matched their expected output', () => {
         let input = [ 'Book1', 'Book2' ];
         let citations = [ 'Smith 2024a.', 'Smith 2024b.' ];
@@ -43,7 +68,7 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({input: input, citations: citations});
+            [passed, failures] = test({input: input, citations: citations}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -69,7 +94,7 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({input: input, citations: citations});
+            [passed, failures] = test({input: input, citations: citations}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -94,7 +119,7 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({input: input, bibliography: bibliography});
+            [passed, failures] = test({input: input, bibliography: bibliography}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -119,7 +144,7 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({input: input, bibliography: bibliography});
+            [passed, failures] = test({input: input, bibliography: bibliography}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -147,7 +172,7 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({input: input});
+            [passed, failures] = test({input: input}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -164,7 +189,7 @@ describe('function test()', () => {
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         let input = [];
         try {
-            test({input: input, style: 'test.csl'});
+            test({input: input, style: 'test.csl'}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
         }
@@ -174,7 +199,7 @@ describe('function test()', () => {
     });
 
     it('reports a failure when style file does not exist', () => {
-        let [passed, failures] = test({input: [], style: 'xtestz.csl'});
+        let [passed, failures] = test({input: [], style: 'xtestz.csl'}, []);
         expect(passed).to.be.false;
         expect(failures[0]).to.have.property('error');
     });
@@ -186,11 +211,13 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({
-                style: 'somestyle.csl',
-                input: input,
-                citations: ['Smith 2012.']
-            });
+            [passed, failures] = test(
+                {
+                    style: 'somestyle.csl',
+                    input: input,
+                    citations: ['Smith 2012.']
+                },
+                []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -212,10 +239,12 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({
-                input: globalInput,
-                tests: [{input: localInput, citations: citations}]
-            });
+            [passed, failures] = test(
+                {
+                    input: globalInput,
+                    tests: [{input: localInput, citations: citations}]
+                },
+                []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -240,7 +269,7 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({tests: [{style: styleName, input: input, citations: citations}]});
+            [passed, failures] = test({tests: [{style: styleName, input: input, citations: citations}]}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -263,12 +292,14 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({
-                input: input,
-                tests: [
-                    {style: styleName, citations: citations}
-                ]
-            });
+            [passed, failures] = test(
+                {
+                    input: input,
+                    tests: [
+                        {style: styleName, citations: citations}
+                    ]
+                },
+                []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -295,8 +326,12 @@ describe('function test()', () => {
 
         let passed, failures;
         try {
-            [passed, failures] = test({bibliography: bibliography,
-                                       tests: [{input: input, citations: citations}]});
+            [passed, failures] = test(
+                {
+                    bibliography: bibliography,
+                    tests: [{input: input, citations: citations}]
+                },
+                []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();

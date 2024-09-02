@@ -64,7 +64,7 @@ export function parseInput(inputs) {
     return parsedInputs;
 }
 
-export function test(specification) {
+export function test(specification, items) {
     // if `tests` is not specified, assume that there is only one global test
     let tests = specification.tests ?? [specification];
 
@@ -87,6 +87,7 @@ export function test(specification) {
                 throw err;
             }
         }
+        bibliographer.registerItems(items);
 
         if (!('citations' in testCase || 'bibliography' in testCase)) {
             failures.push({
