@@ -214,7 +214,7 @@ async function testCommand(testFile) {
     const allPassed = !passes.includes(false);
     let checkMark = allPassed ? colors.green('✔') : colors.red('✘');
     let numPassed = passes.filter((passed) => passed).length;
-    console.log(`${checkMark} ${numPassed}/${passes.length} test files passed`);
+    console.log(`${checkMark} Ran ${passes.length} test files, ${numPassed} passed`);
     console.log();
 
     Deno.exitCode = allPassed ? 0 : 1;
