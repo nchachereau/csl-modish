@@ -205,7 +205,24 @@ async function testCommand(testFile) {
     let passes = [];
 
     for (let testFile of testFiles) {
-        const spec = yaml.parse(await Deno.readTextFile(testFile));
+        let spec;
+        try {
+            spec = yaml.parse(await Deno.readTextFile(testFile));
+        } catch(err) {
+            if (err.code == 'ENOENT') {
+                console.error(`No such test file ${testFile}`);
+                Deno.exit(3);
+            } else if (err.name == 'SyntaxError' || err.name == 'YAMLError') {
+                console.error(
+                    colors.bold(`Error encountered when loading file ${testFile}. Check that the\n` +
+                                'contents follow the guidelines for test files.\n\n') +
+                        `The error was:\n ${err.message}`
+                );
+                Deno.exit(3);
+            } else {
+                throw err;
+            }
+        }
         const [passed, counts, failures] = test(spec, references);
 
         let checkMark = passed ? colors.green('✔') : colors.red('✘');
