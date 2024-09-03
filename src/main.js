@@ -101,6 +101,10 @@ export function test(specification, items) {
         let bibliographer = new Bibliographer();
         // if the test case does not specify the style, use the globally defined style
         let style = testCase.style ?? specification.style;
+        if (style === undefined) {
+            failures.push({type: 'error', error: 'Please specify the path of the CSL style to test.'});
+            continue;
+        }
         try {
             bibliographer.loadStyle(style);
         } catch(err) {
