@@ -87,7 +87,7 @@ export function test(specification, items) {
             if (err.code == 'ENOENT') {
                 failures.push({
                     type: 'error',
-                    error: `No such CSL file: ${style}`
+                    error: err.message
                 });
                 continue;
             } else {
