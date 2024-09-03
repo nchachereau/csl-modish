@@ -5,8 +5,10 @@
       "jsr:@cliffy/ansi@1.0.0-rc.5": "jsr:@cliffy/ansi@1.0.0-rc.5",
       "jsr:@std/assert@^1.0.3": "jsr:@std/assert@1.0.3",
       "jsr:@std/fmt@~0.225.4": "jsr:@std/fmt@0.225.6",
+      "jsr:@std/fs": "jsr:@std/fs@1.0.2",
       "jsr:@std/internal@^1.0.2": "jsr:@std/internal@1.0.2",
       "jsr:@std/path": "jsr:@std/path@1.0.3",
+      "jsr:@std/path@^1.0.3": "jsr:@std/path@1.0.3",
       "jsr:@std/testing": "jsr:@std/testing@1.0.1",
       "jsr:@std/yaml": "jsr:@std/yaml@1.0.4",
       "npm:@types/node": "npm:@types/node@18.16.19",
@@ -29,6 +31,12 @@
       },
       "@std/fmt@0.225.6": {
         "integrity": "aba6aea27f66813cecfd9484e074a9e9845782ab0685c030e453a8a70b37afc8"
+      },
+      "@std/fs@1.0.2": {
+        "integrity": "af57555c7a224a6f147d5cced5404692974f7a628ced8eda67e0d22d92d474ec",
+        "dependencies": [
+          "jsr:@std/path@^1.0.3"
+        ]
       },
       "@std/internal@1.0.2": {
         "integrity": "f4cabe2021352e8bfc24e6569700df87bf070914fc38d4b23eddd20108ac4495"

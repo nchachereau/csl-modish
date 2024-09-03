@@ -1,6 +1,8 @@
 import { Command } from 'commander';
 import { colors } from '@cliffy/ansi/colors';
 import * as yaml from "jsr:@std/yaml";
+import { walk } from "jsr:@std/fs/walk";
+
 import { Bibliographer } from './bibliographer.js';
 import metadata from '../deno.json' with { type: 'json' };
 
@@ -150,33 +152,45 @@ export function test(specification, items) {
     return [passed, counts, failures];
 }
 
-function testCommand(testFile) {
-    const references = JSON.parse(Deno.readTextFileSync('tests/references.json'));
-    const spec = yaml.parse(Deno.readTextFileSync(testFile));
-    const [passed, counts, failures] = test(spec, references);
-
-    let checkMark = passed ? colors.green('✔') : colors.red('✘');
-    console.log(`${checkMark} ${testFile}`);
-    let message = '';
-    message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
-    message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
-    console.log(`  ${message}`);
-
-    for (let fail of failures) {
-        if (fail.type == 'error') {
-            console.log(`  - error: ${fail.error}`);
-        } else if (fail.type == 'citation') {
-            console.log(`  - expected citation: ${fail.expected}`);
-            console.log(`    but output was: ${fail.actual}`);
-        } else if (fail.type == 'bibliography') {
-            console.log('  - expected following bibliography:');
-            console.log(fail.expected.replace(/^- /gm, '     - '));
-            console.log('    but output was:');
-            console.log(fail.actual.replace(/^- /gm, '     - '));
-        }
+async function testCommand(testFile) {
+    let testFiles = [];
+    if (testFile) {
+        testFiles = [testFile];
+    } else {
+        testFiles = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
+        testFiles = testFiles.map((f) => f.path);
     }
-    console.log('');
-    Deno.exitCode = passed ? 0 : 1;
+    const references = JSON.parse(Deno.readTextFileSync('tests/references.json'));
+    let passes = [];
+
+    for (let testFile of testFiles) {
+        const spec = yaml.parse(Deno.readTextFileSync(testFile));
+        const [passed, counts, failures] = test(spec, references);
+
+        let checkMark = passed ? colors.green('✔') : colors.red('✘');
+        console.log(`${checkMark} ${testFile}`);
+        let message = '';
+        message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
+        message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
+        console.log(`  ${message}`);
+
+        for (let fail of failures) {
+            if (fail.type == 'error') {
+                console.log(`  - error: ${fail.error}`);
+            } else if (fail.type == 'citation') {
+                console.log(`  - expected citation: ${fail.expected}`);
+                console.log(`    but output was: ${fail.actual}`);
+            } else if (fail.type == 'bibliography') {
+                console.log('  - expected following bibliography:');
+                console.log(fail.expected.replace(/^- /gm, '     - '));
+                console.log('    but output was:');
+                console.log(fail.actual.replace(/^- /gm, '     - '));
+            }
+        }
+        console.log('');
+        passes.push(passed);
+    }
+    Deno.exitCode = passes.includes(false) ? 1 : 0;
 }
 
 if (import.meta.main) {
@@ -189,7 +203,7 @@ if (import.meta.main) {
     program
         .command('test')
         .description('Run tests')
-        .argument('<test_file>')
+        .argument('[test-file]')
         .action(testCommand);
 
     program.parse();
