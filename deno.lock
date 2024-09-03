@@ -2,9 +2,8 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@cliffy/ansi@1.0.0-rc.5": "jsr:@cliffy/ansi@1.0.0-rc.5",
       "jsr:@std/assert@^1.0.3": "jsr:@std/assert@1.0.3",
-      "jsr:@std/fmt@~0.225.4": "jsr:@std/fmt@0.225.6",
+      "jsr:@std/fmt": "jsr:@std/fmt@1.0.1",
       "jsr:@std/fs": "jsr:@std/fs@1.0.2",
       "jsr:@std/internal@^1.0.2": "jsr:@std/internal@1.0.2",
       "jsr:@std/path": "jsr:@std/path@1.0.3",
@@ -14,23 +13,18 @@
       "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:chai@5": "npm:chai@5.1.1",
       "npm:citeproc@2": "npm:citeproc@2.4.63",
-      "npm:commander@12": "npm:commander@12.1.0"
+      "npm:commander@12": "npm:commander@12.1.0",
+      "npm:diff@6": "npm:diff@6.0.0"
     },
     "jsr": {
-      "@cliffy/ansi@1.0.0-rc.5": {
-        "integrity": "85a4dba4da5d8278dcdfeea98672cd15706c244833f82edc60c61f410d9fc1a9",
-        "dependencies": [
-          "jsr:@std/fmt@~0.225.4"
-        ]
-      },
       "@std/assert@1.0.3": {
         "integrity": "b0d03ce1ced880df67132eea140623010d415848df66f6aa5df76507ca7c26d8",
         "dependencies": [
           "jsr:@std/internal@^1.0.2"
         ]
       },
-      "@std/fmt@0.225.6": {
-        "integrity": "aba6aea27f66813cecfd9484e074a9e9845782ab0685c030e453a8a70b37afc8"
+      "@std/fmt@1.0.1": {
+        "integrity": "ef76c37faa7720faa8c20fd8cc74583f9b1e356dfd630c8714baa716a45856ab"
       },
       "@std/fs@1.0.2": {
         "integrity": "af57555c7a224a6f147d5cced5404692974f7a628ced8eda67e0d22d92d474ec",
@@ -89,6 +83,10 @@
         "integrity": "sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==",
         "dependencies": {}
       },
+      "diff@6.0.0": {
+        "integrity": "sha512-NbGtgPSw7il+jeajji1H6iKjCk3r/ANQKw3FFUhGV50+MH5MKIMeUmi53piTr7jlkWcq9eS858qbkRzkehwe+w==",
+        "dependencies": {}
+      },
       "get-func-name@2.0.2": {
         "integrity": "sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==",
         "dependencies": {}
@@ -108,9 +106,9 @@
   "remote": {},
   "workspace": {
     "dependencies": [
-      "jsr:@cliffy/ansi@1.0.0-rc.5",
       "npm:citeproc@2",
-      "npm:commander@12"
+      "npm:commander@12",
+      "npm:diff@6"
     ]
   }
 }

@@ -1,7 +1,8 @@
 import { Command } from 'commander';
-import { colors } from '@cliffy/ansi/colors';
-import * as yaml from "jsr:@std/yaml";
-import { walk } from "jsr:@std/fs/walk";
+import * as colors from 'jsr:@std/fmt/colors';
+import * as yaml from 'jsr:@std/yaml';
+import { walk } from 'jsr:@std/fs/walk';
+import * as Diff from 'diff';
 
 import { Bibliographer } from './bibliographer.js';
 import metadata from '../deno.json' with { type: 'json' };
@@ -68,6 +69,23 @@ export function parseInput(inputs) {
         parsedInputs.push(parsedInput);
     }
     return parsedInputs;
+}
+
+function diffWithColors(expected, actual) {
+    let difference = Diff.diffChars(expected, actual);
+    let coloredExpected = '';
+    let coloredActual = '';
+    for (let part of difference) {
+        if (part.added) {
+            coloredActual += colors.bgRed(part.value);
+        } else if (part.removed) {
+            coloredExpected += colors.bgRed(part.value);
+        } else {
+            coloredActual += part.value;
+            coloredExpected += part.value;
+        }
+    }
+    return [coloredExpected, coloredActual];
 }
 
 export function test(specification, items) {
@@ -178,13 +196,15 @@ async function testCommand(testFile) {
             if (fail.type == 'error') {
                 console.log(`   - error: ${fail.error}`);
             } else if (fail.type == 'citation') {
-                console.log(`   - expected citation: ${fail.expected}`);
-                console.log(`     but output was: ${fail.actual}`);
+                let [expected, actual] = diffWithColors(fail.expected, fail.actual);
+                console.log(`   - expected citation: ${expected}`);
+                console.log(`     but output was: ${actual}`);
             } else if (fail.type == 'bibliography') {
+                let [expected, actual] = diffWithColors(fail.expected, fail.actual);
                 console.log('   - expected following bibliography:');
-                console.log(fail.expected.replace(/^- /gm, '      - '));
+                console.log(expected.replace(/^- /gm, '      - '));
                 console.log('     but output was:');
-                console.log(fail.actual.replace(/^- /gm, '      - '));
+                console.log(actual.replace(/^- /gm, '      - '));
             }
         }
         console.log('');
