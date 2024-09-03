@@ -1,9 +1,7 @@
 import { Command } from '@cliffy/command';
+import { parse as parseYAML } from "jsr:@std/yaml";
 import { Bibliographer } from './bibliographer.js';
 import metadata from '../deno.json' with { type: 'json' };
-
-import { parse as parseYAML } from "jsr:@std/yaml";
-import fs from 'node:fs';
 
 const LOCATORS = {
     'bk.': 'book',
@@ -142,8 +140,8 @@ export function test(specification, items) {
 }
 
 function testCommand(options, testFile) {
-    const references = JSON.parse(fs.readFileSync('tests/references.json', 'utf-8'));
-    const spec = parseYAML(fs.readFileSync(testFile, 'utf-8'));
+    const references = JSON.parse(Deno.readTextFileSync('tests/references.json'));
+    const spec = parseYAML(Deno.readTextFileSync(testFile));
     console.log(test(spec, references));
 }
 

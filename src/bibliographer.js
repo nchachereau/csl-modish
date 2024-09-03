@@ -1,6 +1,5 @@
 import citeproc from 'citeproc';
-import fs from 'node:fs';
-import path from 'node:path';
+import * as path from "jsr:@std/path";
 
 export class UnregisteredItemError extends Error {
     constructor(itemIdentifier) {
@@ -26,11 +25,11 @@ export class Bibliographer {
                     'locales',
                     `locales-${l}.xml`
                 );
-                return fs.readFileSync(localeFilePath, 'utf-8');
+                return Deno.readTextFileSync(localeFilePath);
             },
             retrieveItem: (id) => this.items[id]
         };
-        const style = fs.readFileSync(stylePath, 'utf-8');
+        const style = Deno.readTextFileSync(stylePath);
         this.processor = new citeproc.Engine(sys, style, lang);
     }
 

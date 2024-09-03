@@ -1,7 +1,6 @@
 import { describe, it, beforeEach } from "jsr:@std/testing/bdd";
 import { expect } from 'npm:chai@5';
-import fs from 'node:fs';
-import path from 'node:path';
+import * as path from "jsr:@std/path";
 
 import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.js';
 
