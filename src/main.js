@@ -152,7 +152,30 @@ export function test(specification, items) {
 function testCommand(options, testFile) {
     const references = JSON.parse(Deno.readTextFileSync('tests/references.json'));
     const spec = parseYAML(Deno.readTextFileSync(testFile));
-    console.log(test(spec, references));
+    const [passed, counts, failures] = test(spec, references);
+
+    let checkMark = passed ? '✔' : '✘';
+    console.log(`${checkMark} ${testFile}`);
+    let message = '';
+    message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
+    message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
+    console.log(`  ${message}`);
+
+    for (let fail of failures) {
+        if (fail.type == 'error') {
+            console.log(`  - error: ${fail.error}`);
+        } else if (fail.type == 'citation') {
+            console.log(`  - expected citation: ${fail.expected}`);
+            console.log(`    but output was: ${fail.actual}`);
+        } else if (fail.type == 'bibliography') {
+            console.log('  - expected following bibliography:');
+            console.log(fail.expected.replace(/^- /gm, '     - '));
+            console.log('    but output was:');
+            console.log(fail.actual.replace(/^- /gm, '     - '));
+        }
+    }
+    console.log('');
+    Deno.exitCode = passed ? 0 : 1;
 }
 
 if (import.meta.main) {
