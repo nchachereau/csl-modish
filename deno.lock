@@ -2,7 +2,9 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "jsr:@cliffy/ansi@1.0.0-rc.5": "jsr:@cliffy/ansi@1.0.0-rc.5",
       "jsr:@std/assert@^1.0.3": "jsr:@std/assert@1.0.3",
+      "jsr:@std/fmt@~0.225.4": "jsr:@std/fmt@0.225.6",
       "jsr:@std/internal@^1.0.2": "jsr:@std/internal@1.0.2",
       "jsr:@std/path": "jsr:@std/path@1.0.3",
       "jsr:@std/testing": "jsr:@std/testing@1.0.1",
@@ -13,11 +15,20 @@
       "npm:commander@12": "npm:commander@12.1.0"
     },
     "jsr": {
+      "@cliffy/ansi@1.0.0-rc.5": {
+        "integrity": "85a4dba4da5d8278dcdfeea98672cd15706c244833f82edc60c61f410d9fc1a9",
+        "dependencies": [
+          "jsr:@std/fmt@~0.225.4"
+        ]
+      },
       "@std/assert@1.0.3": {
         "integrity": "b0d03ce1ced880df67132eea140623010d415848df66f6aa5df76507ca7c26d8",
         "dependencies": [
           "jsr:@std/internal@^1.0.2"
         ]
+      },
+      "@std/fmt@0.225.6": {
+        "integrity": "aba6aea27f66813cecfd9484e074a9e9845782ab0685c030e453a8a70b37afc8"
       },
       "@std/internal@1.0.2": {
         "integrity": "f4cabe2021352e8bfc24e6569700df87bf070914fc38d4b23eddd20108ac4495"
@@ -89,6 +100,7 @@
   "remote": {},
   "workspace": {
     "dependencies": [
+      "jsr:@cliffy/ansi@1.0.0-rc.5",
       "npm:citeproc@2",
       "npm:commander@12"
     ]

@@ -5,6 +5,7 @@
     "exports": "./src/main.js",
     "imports": {
         "citeproc": "npm:citeproc@2",
-        "commander": "npm:commander@12"
+        "commander": "npm:commander@12",
+        "@cliffy/ansi": "jsr:@cliffy/ansi@1.0.0-rc.5"
     }
 }

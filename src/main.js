@@ -1,5 +1,6 @@
 import { Command } from 'commander';
-import { parse as parseYAML } from "jsr:@std/yaml";
+import { colors } from '@cliffy/ansi/colors';
+import * as yaml from "jsr:@std/yaml";
 import { Bibliographer } from './bibliographer.js';
 import metadata from '../deno.json' with { type: 'json' };
 
@@ -151,10 +152,10 @@ export function test(specification, items) {
 
 function testCommand(testFile) {
     const references = JSON.parse(Deno.readTextFileSync('tests/references.json'));
-    const spec = parseYAML(Deno.readTextFileSync(testFile));
+    const spec = yaml.parse(Deno.readTextFileSync(testFile));
     const [passed, counts, failures] = test(spec, references);
 
-    let checkMark = passed ? '✔' : '✘';
+    let checkMark = passed ? colors.green('✔') : colors.red('✘');
     console.log(`${checkMark} ${testFile}`);
     let message = '';
     message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
