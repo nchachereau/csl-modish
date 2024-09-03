@@ -66,9 +66,9 @@ describe('function test()', () => {
             ['Smith 2024a.', 'Smith 2024b.']
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test({input: input, citations: citations}, []);
+            [passed, counts, failures] = test({input: input, citations: citations}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -77,6 +77,7 @@ describe('function test()', () => {
 
         expect(passed).to.be.true;
         expect(failures).to.be.empty;
+        expect(counts.citations).to.eql([2, 0]);
         assertSpyCall(citeStub, 0, { args: [ [ { id: 'Book1' } ] ]});
         assertSpyCall(citeStub, 1, { args: [ [ { id: 'Book2' } ] ]});
         assertSpyCalls(citeStub, 2);
@@ -92,15 +93,16 @@ describe('function test()', () => {
             ['Smith 2012.', 'Doe 1995.']
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test({input: input, citations: citations}, []);
+            [passed, counts, failures] = test({input: input, citations: citations}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
             getCitationsStub.restore();
         }
         expect(passed).to.be.false;
+        expect(counts.citations).to.eql([1, 1]);
         expect(failures).to.have.lengthOf(1);
         expect(failures[0]).to.eql({expected: 'Smith 2015.', actual: 'Doe 1995.'});
     });
@@ -117,9 +119,9 @@ describe('function test()', () => {
             ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.']
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test({input: input, bibliography: bibliography}, []);
+            [passed, counts, failures] = test({input: input, bibliography: bibliography}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -127,6 +129,7 @@ describe('function test()', () => {
             getBibliographyStub.restore();
         }
         expect(passed).to.be.true;
+        expect(counts.bibliography).to.eql([1, 0]);
         expect(failures).to.be.empty;
     });
 
@@ -142,9 +145,9 @@ describe('function test()', () => {
             ['Wrong Name, Other Book, 1990.', 'John Smith, Book1, 2024.']
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test({input: input, bibliography: bibliography}, []);
+            [passed, counts, failures] = test({input: input, bibliography: bibliography}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -152,6 +155,7 @@ describe('function test()', () => {
             getBibliographyStub.restore();
         }
         expect(passed).to.be.false;
+        expect(counts.bibliography).to.eql([0, 1]);
         expect(failures).to.have.lengthOf(1);
         expect(failures[0]).to.eql({
             expected: '- Jane Doe, Book2, 1990.\n- John Smith, Book1, 2024.',
@@ -170,9 +174,9 @@ describe('function test()', () => {
             ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.']
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test({input: input}, []);
+            [passed, counts, failures] = test({input: input}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -200,9 +204,9 @@ describe('function test()', () => {
 
     it('reports a failure when style file does not exist', () => {
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([]));
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test(
+            [passed, counts, failures] = test(
                 {
                     style: 'xtestz.csl',
                     input: [ 'Book1' ],
@@ -222,9 +226,9 @@ describe('function test()', () => {
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([new UnregisteredItemError(input[0])]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test(
+            [passed, counts, failures] = test(
                 {
                     style: 'somestyle.csl',
                     input: input,
@@ -250,9 +254,9 @@ describe('function test()', () => {
             ['Smith 2012.', 'Doe 1995.']
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test(
+            [passed, counts, failures] = test(
                 {
                     input: globalInput,
                     tests: [{input: localInput, citations: citations}]
@@ -280,9 +284,9 @@ describe('function test()', () => {
             citations
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test({tests: [{style: styleName, input: input, citations: citations}]}, []);
+            [passed, counts, failures] = test({tests: [{style: styleName, input: input, citations: citations}]}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -303,9 +307,9 @@ describe('function test()', () => {
             citations
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test(
+            [passed, counts, failures] = test(
                 {
                     input: input,
                     tests: [
@@ -337,9 +341,9 @@ describe('function test()', () => {
             ['Wrong Name, Other Book, 1990.', 'John Smith, Book1, 2024.']
         ]));
 
-        let passed, failures;
+        let passed, counts, failures;
         try {
-            [passed, failures] = test(
+            [passed, counts, failures] = test(
                 {
                     bibliography: bibliography,
                     tests: [{input: input, citations: citations}]

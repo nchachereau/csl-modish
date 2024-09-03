@@ -72,6 +72,7 @@ export function test(specification, items) {
     let tests = specification.tests ?? [specification];
 
     let passed = false;
+    let counts = { citations: [0, 0], bibliography: [0, 0] };
     let failures = [];
     for (let testCase of tests) {
         // if the test case does not specify the input, use the global definition
@@ -119,8 +120,11 @@ export function test(specification, items) {
             let expectedCitations = testCase.citations;
             for (let [i, outputCitation] of outputCitations.entries()) {
                 let expected = expectedCitations[i];
-                if (outputCitation != expected) {
+                if (outputCitation == expected) {
+                    counts.citations[0]++;
+                } else {
                     failures.push({expected: expected, actual: outputCitation});
+                    counts.citations[1]++;
                 }
             }
         }
@@ -129,14 +133,17 @@ export function test(specification, items) {
             let expectedBiblio = testCase.bibliography;
             if (expectedBiblio.length !== outputBibliography.length ||
                 !(outputBibliography.every((val, i) => val === expectedBiblio[i]))) {
+                counts.bibliography[1]++;
                 let expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
                 let outputStr = outputBibliography.map((s) => `- ${s}`).join('\n');
                 failures.push({expected: expectedStr, actual: outputStr});
+            } else {
+                counts.bibliography[0]++;
             }
         }
     }
     passed = (failures.length == 0) ? true : false;
-    return [passed, failures];
+    return [passed, counts, failures];
 }
 
 function testCommand(options, testFile) {
