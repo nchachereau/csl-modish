@@ -1,4 +1,4 @@
-import { Command } from '@cliffy/command';
+import { Command } from 'commander';
 import { parse as parseYAML } from "jsr:@std/yaml";
 import { Bibliographer } from './bibliographer.js';
 import metadata from '../deno.json' with { type: 'json' };
@@ -149,7 +149,7 @@ export function test(specification, items) {
     return [passed, counts, failures];
 }
 
-function testCommand(options, testFile) {
+function testCommand(testFile) {
     const references = JSON.parse(Deno.readTextFileSync('tests/references.json'));
     const spec = parseYAML(Deno.readTextFileSync(testFile));
     const [passed, counts, failures] = test(spec, references);
@@ -179,12 +179,17 @@ function testCommand(options, testFile) {
 }
 
 if (import.meta.main) {
-    await new Command()
+    const program = new Command();
+    program
         .name('modish')
         .description(metadata.description)
-        .version(metadata.version)
+        .version(metadata.version);
+
+    program
         .command('test')
-        .arguments('<test_file>')
-        .action(testCommand)
-        .parse(Deno.args);
+        .description('Run tests')
+        .argument('<test_file>')
+        .action(testCommand);
+
+    program.parse();
 }
