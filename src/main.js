@@ -168,29 +168,36 @@ async function testCommand(testFile) {
         const [passed, counts, failures] = test(spec, references);
 
         let checkMark = passed ? colors.green('✔') : colors.red('✘');
-        console.log(`${checkMark} ${testFile}`);
+        console.log(` ${checkMark} ${testFile}`);
         let message = '';
         message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
         message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
-        console.log(`  ${message}`);
+        console.log(`   ${message}`);
 
         for (let fail of failures) {
             if (fail.type == 'error') {
-                console.log(`  - error: ${fail.error}`);
+                console.log(`   - error: ${fail.error}`);
             } else if (fail.type == 'citation') {
-                console.log(`  - expected citation: ${fail.expected}`);
-                console.log(`    but output was: ${fail.actual}`);
+                console.log(`   - expected citation: ${fail.expected}`);
+                console.log(`     but output was: ${fail.actual}`);
             } else if (fail.type == 'bibliography') {
-                console.log('  - expected following bibliography:');
-                console.log(fail.expected.replace(/^- /gm, '     - '));
-                console.log('    but output was:');
-                console.log(fail.actual.replace(/^- /gm, '     - '));
+                console.log('   - expected following bibliography:');
+                console.log(fail.expected.replace(/^- /gm, '      - '));
+                console.log('     but output was:');
+                console.log(fail.actual.replace(/^- /gm, '      - '));
             }
         }
         console.log('');
         passes.push(passed);
     }
-    Deno.exitCode = passes.includes(false) ? 1 : 0;
+
+    const allPassed = !passes.includes(false);
+    let checkMark = allPassed ? colors.green('✔') : colors.red('✘');
+    let numPassed = passes.filter((passed) => passed).length;
+    console.log(`${checkMark} ${numPassed}/${passes.length} test files passed`);
+    console.log();
+
+    Deno.exitCode = allPassed ? 0 : 1;
 }
 
 if (import.meta.main) {
