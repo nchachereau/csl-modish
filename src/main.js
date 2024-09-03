@@ -178,11 +178,34 @@ async function testCommand(testFile) {
         testFiles = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
         testFiles = testFiles.map((f) => f.path);
     }
-    const references = JSON.parse(Deno.readTextFileSync('tests/references.json'));
+    const referenceFile = 'tests/references.json';
+    let references;
+    try {
+        references = JSON.parse(await Deno.readTextFile(referenceFile));
+    } catch(err) {
+        if (err.code == 'ENOENT') {
+            console.error(
+                `No CSL-JSON reference file '${referenceFile}. Create one, for instance by\n` +
+                'exporting it from your reference management software (e.g. Zotero).');
+            Deno.exitCode = 3;
+            return;
+        } else if (err instanceof SyntaxError) {
+            console.error(
+                `Could not parse CSL-JSON reference file ${referenceFile}. You may need to\n` +
+                    '  export one again from your reference management software (e.g. Zotero).\n' +
+                    'If you wrote the JSON file yourself, you need to fix the syntax. Parsing error was:\n' +
+                    `  '${err.message}'.`
+            );
+            Deno.exitCode = 3;
+            return;
+        } else {
+            throw err;
+        }
+    }
     let passes = [];
 
     for (let testFile of testFiles) {
-        const spec = yaml.parse(Deno.readTextFileSync(testFile));
+        const spec = yaml.parse(await Deno.readTextFile(testFile));
         const [passed, counts, failures] = test(spec, references);
 
         let checkMark = passed ? colors.green('✔') : colors.red('✘');
@@ -217,7 +240,7 @@ async function testCommand(testFile) {
     console.log(`${checkMark} Ran ${passes.length} test files, ${numPassed} passed`);
     console.log();
 
-    Deno.exitCode = allPassed ? 0 : 1;
+    Deno.exitCode = allPassed ? 0 : 2;
 }
 
 if (import.meta.main) {
