@@ -104,7 +104,7 @@ describe('function test()', () => {
         expect(passed).to.be.false;
         expect(counts.citations).to.eql([1, 1]);
         expect(failures).to.have.lengthOf(1);
-        expect(failures[0]).to.eql({expected: 'Smith 2015.', actual: 'Doe 1995.'});
+        expect(failures[0]).to.eql({type: 'citation', expected: 'Smith 2015.', actual: 'Doe 1995.'});
     });
 
     it('reports that the bibliography matches the expected output', () => {
@@ -158,6 +158,7 @@ describe('function test()', () => {
         expect(counts.bibliography).to.eql([0, 1]);
         expect(failures).to.have.lengthOf(1);
         expect(failures[0]).to.eql({
+            type: 'bibliography',
             expected: '- Jane Doe, Book2, 1990.\n- John Smith, Book1, 2024.',
             actual: '- Wrong Name, Other Book, 1990.\n- John Smith, Book1, 2024.'
         });
@@ -185,6 +186,7 @@ describe('function test()', () => {
         }
         expect(passed).to.be.false;
         expect(failures[0]).to.eql({
+            type: 'error',
             error: 'Please specify expected output (citations and/or bibliography) in your test(s).'
         });
     });
@@ -269,7 +271,7 @@ describe('function test()', () => {
         }
         expect(passed).to.be.false;
         expect(failures).to.have.lengthOf(1);
-        expect(failures[0]).to.eql({expected: 'Smith 2015.', actual: 'Doe 1995.'});
+        expect(failures[0]).to.eql({type: 'citation', expected: 'Smith 2015.', actual: 'Doe 1995.'});
         assertSpyCall(citeStub, 0, {args: [[{id: 'Book1'}]]});
         assertSpyCall(citeStub, 1, {args: [[{id: 'Book2'}]]});
     });

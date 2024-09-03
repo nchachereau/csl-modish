@@ -85,7 +85,8 @@ export function test(specification, items) {
         } catch(err) {
             if (err.code == 'ENOENT') {
                 failures.push({
-                    error: `No such CSL file: ${style}.`
+                    type: 'error',
+                    error: `No such CSL file: ${style}`
                 });
                 continue;
             } else {
@@ -96,6 +97,7 @@ export function test(specification, items) {
 
         if (!('citations' in testCase || 'bibliography' in testCase)) {
             failures.push({
+                type: 'error',
                 error:
                 'Please specify expected output (citations and/or bibliography) in your test(s).'
             });
@@ -108,6 +110,7 @@ export function test(specification, items) {
             } catch(err) {
                 if (err.name == 'UnregisteredItemError') {
                     failures.push({
+                        type: 'error',
                         error: `No reference ${err.erroneousIdentifier} could be found in references.json.`
                     });
                 } else {
@@ -123,7 +126,7 @@ export function test(specification, items) {
                 if (outputCitation == expected) {
                     counts.citations[0]++;
                 } else {
-                    failures.push({expected: expected, actual: outputCitation});
+                    failures.push({type: 'citation', expected: expected, actual: outputCitation});
                     counts.citations[1]++;
                 }
             }
@@ -136,7 +139,7 @@ export function test(specification, items) {
                 counts.bibliography[1]++;
                 let expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
                 let outputStr = outputBibliography.map((s) => `- ${s}`).join('\n');
-                failures.push({expected: expectedStr, actual: outputStr});
+                failures.push({type: 'bibliography', expected: expectedStr, actual: outputStr});
             } else {
                 counts.bibliography[0]++;
             }
