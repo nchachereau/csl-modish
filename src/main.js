@@ -218,8 +218,11 @@ async function testCommand(testFile, options) {
             throw err;
         }
     }
-    let passes = [];
 
+    const quiet = Boolean(options.quiet);
+    const verbose = (!quiet && options.verbose) ? true : false;
+
+    let passes = [];
     for (let testFile of testFiles) {
         let spec;
         try {
@@ -239,22 +242,27 @@ async function testCommand(testFile, options) {
                 throw err;
             }
         }
+
         const [passed, counts, failures] = test(spec, references);
 
         let checkMark = passed ? colors.green('✔') : colors.red('✘');
-        console.log(` ${checkMark} ${testFile}`);
-        let message = '';
-        message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
-        message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
-        console.log(`   ${message}`);
+        if (verbose || failures.length) {
+            console.log(` ${checkMark} ${testFile}`);
+        }
+        if (verbose) {
+            let message = '';
+            message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
+            message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
+            console.log(`   ${message}`);
+        }
 
         for (let fail of failures) {
             if (fail.type == 'error') {
                 console.log(`   - ${colors.brightRed('error')}: ${fail.error.replace(/\n/g, '\n     ')}`);
             } else if (fail.type == 'citation') {
                 let [expected, actual] = diffWithColors(fail.expected, fail.actual);
-                console.log(`   - expected citation: ${expected}`);
-                console.log(`     but output was: ${actual}`);
+                console.log(`   - expected citation:\n     ${expected}`);
+                console.log(`     but output was:\n     ${actual}`);
             } else if (fail.type == 'bibliography') {
                 let [expected, actual] = diffWithColors(fail.expected, fail.actual);
                 console.log('   - expected following bibliography:');
@@ -263,19 +271,26 @@ async function testCommand(testFile, options) {
                 console.log(actual.replace(/^- /gm, '      - '));
             }
         }
-        console.log('');
+        if (verbose || failures.length) {
+            console.log('');
+        }
         if (!passed && options.bail) {
-            console.error(colors.red('Stopped after first failed test encountered.'));
+            if (verbose) {
+                console.log(colors.red('Stopped after first failed test encountered.'));
+            }
             Deno.exit(2);
         }
         passes.push(passed);
     }
 
     const allPassed = !passes.includes(false);
-    let checkMark = allPassed ? colors.green('✔') : colors.red('✘');
-    let numPassed = passes.filter((passed) => passed).length;
-    console.log(`${checkMark} Ran ${passes.length} test files, ${numPassed} passed`);
-    console.log();
+
+    if (!quiet) {
+        let checkMark = allPassed ? colors.green('✔') : colors.red('✘');
+        let numPassed = passes.filter((passed) => passed).length;
+        console.log(`${checkMark} Ran ${passes.length} test files, ${numPassed} passed`);
+        console.log();
+    }
 
     Deno.exitCode = allPassed ? 0 : 2;
 }
@@ -291,6 +306,8 @@ if (import.meta.main) {
         .command('test')
         .description('Run tests')
         .option('-b, --bail', 'abort after first test failure')
+        .option('-q, --quiet', 'suppress all normal output')
+        .option('--verbose', 'output status for each file')
         .argument('[test-file]')
         .action(testCommand);
 
