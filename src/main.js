@@ -238,7 +238,7 @@ async function testCommand(testFile) {
 
         for (let fail of failures) {
             if (fail.type == 'error') {
-                console.log(`   - error: ${fail.error}`);
+                console.log(`   - ${colors.brightRed('error')}: ${fail.error}`);
             } else if (fail.type == 'citation') {
                 let [expected, actual] = diffWithColors(fail.expected, fail.actual);
                 console.log(`   - expected citation: ${expected}`);
