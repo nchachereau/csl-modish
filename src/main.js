@@ -1,5 +1,7 @@
 import { Command } from 'commander';
 import * as colors from 'jsr:@std/fmt/colors';
+import { Spinner } from 'jsr:@std/cli';
+
 import * as yaml from 'jsr:@std/yaml';
 import { walk } from 'jsr:@std/fs/walk';
 import * as Diff from 'diff';
@@ -221,9 +223,14 @@ async function testCommand(testFile, options) {
 
     const quiet = Boolean(options.quiet);
     const verbose = (!quiet && options.verbose) ? true : false;
+    const spinner = new Spinner({ message: 'Running tests…' });
 
     let passes = [];
     for (let testFile of testFiles) {
+        if (!quiet) {
+            spinner.start();
+        }
+
         let spec;
         try {
             spec = yaml.parse(await Deno.readTextFile(testFile));
@@ -246,32 +253,36 @@ async function testCommand(testFile, options) {
         const [passed, counts, failures] = test(spec, references);
 
         let checkMark = passed ? colors.green('✔') : colors.red('✘');
-        if (verbose || failures.length) {
+        if (verbose || (!quiet && failures.length)) {
+            spinner.stop();
             console.log(` ${checkMark} ${testFile}`);
         }
         if (verbose) {
+            spinner.stop();
             let message = '';
             message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
             message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
             console.log(`   ${message}`);
         }
 
-        for (let fail of failures) {
-            if (fail.type == 'error') {
-                console.log(`   - ${colors.brightRed('error')}: ${fail.error.replace(/\n/g, '\n     ')}`);
-            } else if (fail.type == 'citation') {
-                let [expected, actual] = diffWithColors(fail.expected, fail.actual);
-                console.log(`   - expected citation:\n     ${expected}`);
-                console.log(`     but output was:\n     ${actual}`);
-            } else if (fail.type == 'bibliography') {
-                let [expected, actual] = diffWithColors(fail.expected, fail.actual);
-                console.log('   - expected following bibliography:');
-                console.log(expected.replace(/^- /gm, '      - '));
-                console.log('     but output was:');
-                console.log(actual.replace(/^- /gm, '      - '));
+        if (!quiet) {
+            for (let fail of failures) {
+                if (fail.type == 'error') {
+                    console.log(`   - ${colors.brightRed('error')}: ${fail.error.replace(/\n/g, '\n     ')}`);
+                } else if (fail.type == 'citation') {
+                    let [expected, actual] = diffWithColors(fail.expected, fail.actual);
+                    console.log(`   - expected citation:\n     ${expected}`);
+                    console.log(`     but output was:\n     ${actual}`);
+                } else if (fail.type == 'bibliography') {
+                    let [expected, actual] = diffWithColors(fail.expected, fail.actual);
+                    console.log('   - expected following bibliography:');
+                    console.log(expected.replace(/^- /gm, '      - '));
+                    console.log('     but output was:');
+                    console.log(actual.replace(/^- /gm, '      - '));
+                }
             }
         }
-        if (verbose || failures.length) {
+        if (verbose || (!quiet && failures.length)) {
             console.log('');
         }
         if (!passed && options.bail) {
@@ -283,13 +294,13 @@ async function testCommand(testFile, options) {
         passes.push(passed);
     }
 
+    spinner.stop();
     const allPassed = !passes.includes(false);
 
     if (!quiet) {
         let checkMark = allPassed ? colors.green('✔') : colors.red('✘');
         let numPassed = passes.filter((passed) => passed).length;
         console.log(`${checkMark} Ran ${passes.length} test files, ${numPassed} passed`);
-        console.log();
     }
 
     Deno.exitCode = allPassed ? 0 : 2;
