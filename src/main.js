@@ -181,6 +181,7 @@ async function testCommand(testFile) {
     } else {
         testFiles = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
         testFiles = testFiles.map((f) => f.path);
+        testFiles.sort();
     }
     const referenceFile = 'tests/references.json';
     let references;
