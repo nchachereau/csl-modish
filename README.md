@@ -26,7 +26,8 @@ style.
   [CSL-JSON](https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html)
   format. Easiest way: export relevant references from your Zotero library.
 
-- Edit `tests/books.yml` (name the test however you want).
+- Edit `tests/books.yml` (name the file however you want, but place it in the
+  `tests` directory).
 
   Here is what a minimal test file could look like:
 
