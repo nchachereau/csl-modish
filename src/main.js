@@ -174,7 +174,7 @@ export function test(specification, items) {
     return [passed, counts, failures];
 }
 
-async function testCommand(testFile) {
+async function testCommand(testFile, options) {
     let testFiles = [];
     if (testFile) {
         testFiles = [testFile];
@@ -253,6 +253,10 @@ async function testCommand(testFile) {
             }
         }
         console.log('');
+        if (!passed && options.bail) {
+            console.error(colors.red('Stopped after first failed test encountered.'));
+            Deno.exit(2);
+        }
         passes.push(passed);
     }
 
@@ -275,6 +279,7 @@ if (import.meta.main) {
     program
         .command('test')
         .description('Run tests')
+        .option('-b, --bail', 'abort after first test failure')
         .argument('[test-file]')
         .action(testCommand);
 
