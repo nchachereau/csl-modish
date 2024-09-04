@@ -1,7 +1,7 @@
 {
     "name": "@csl-modish/modish",
     "description": "Automated tests for your CSL styles",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "exports": "./src/main.js",
     "imports": {
         "citeproc": "npm:citeproc@2",
