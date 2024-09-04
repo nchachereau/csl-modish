@@ -146,14 +146,25 @@ export function test(specification, items) {
         if ('citations' in testCase) {
             let outputCitations = bibliographer.getCitations();
             let expectedCitations = testCase.citations;
+            let unmatchedCitations = [];
             for (let [i, outputCitation] of outputCitations.entries()) {
                 let expected = expectedCitations[i];
-                if (outputCitation == expected) {
+                if (expected === undefined) {
+                    unmatchedCitations.push(outputCitation);
+                } else if (outputCitation == expected) {
                     counts.citations[0]++;
                 } else {
                     failures.push({type: 'citation', expected: expected, actual: outputCitation});
                     counts.citations[1]++;
                 }
+            }
+            if (unmatchedCitations.length) {
+                failures.push({
+                    type: 'error',
+                    error: `Please specify all expected outputs in your test for style ${style}.\n` +
+                        `The style generated ${outputCitations.length} citations, the test only specified ${expectedCitations.length}.\n` +
+                        'The additional citations were:\n' + unmatchedCitations.map((s) => `  - ${s}`).join('\n')
+                });
             }
         }
         if ('bibliography' in testCase) {
@@ -239,7 +250,7 @@ async function testCommand(testFile, options) {
 
         for (let fail of failures) {
             if (fail.type == 'error') {
-                console.log(`   - ${colors.brightRed('error')}: ${fail.error}`);
+                console.log(`   - ${colors.brightRed('error')}: ${fail.error.replace(/\n/g, '\n     ')}`);
             } else if (fail.type == 'citation') {
                 let [expected, actual] = diffWithColors(fail.expected, fail.actual);
                 console.log(`   - expected citation: ${expected}`);
