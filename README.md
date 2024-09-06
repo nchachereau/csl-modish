@@ -76,13 +76,24 @@ Test files are written in YAML, and need to specify:
 - and the expected output for these items when they are formatted as `citations`
   and/or `bibliography`.
 
-### style
+### style and lang
 
 `style` specifies the path of the CSL file, relative to where you run the
 command (typically the root of your project):
 ```yaml
 style: style.csl
 ```
+
+Optionally, it is also possible to specify the language/locale:
+
+```yaml
+style: style.csl
+lang: de-CH
+```
+
+This has no effect when the style defines a `default-locale`. For styles without
+a `default-locale`, citations and bibliography are formatted using `en-US` by
+default.
 
 ### input
 
@@ -130,9 +141,9 @@ bibliography:
 
 Alternatively, it is possible to specify a series of tests in the same file.
 This is especially useful if the tests use the same style with different
-`input`, or different styles with the same `input`. The **tests** are given
-as a list, each test in the list specifying the mentioned variables: `style`,
-`input`, `citations` and `bibliography`:
+`input` or different `lang`, or different styles with the same `input`. The
+**tests** are given as a list, each test in the list specifying the mentioned
+variables: `style`, `input`, `citations` and `bibliography`:
 
 ```yaml
 tests:

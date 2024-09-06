@@ -216,7 +216,20 @@ describe('function test()', () => {
             bibliographerLoadStyleStub.restore();
         }
         assertSpyCall(bibliographerLoadStyleStub, 0, {
-            args: ['test.csl']
+            args: ['test.csl', undefined]
+        });
+    });
+
+    it('uses the language specified in the test', () => {
+        const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
+        let input = [];
+        try {
+            test({input: input, style: 'test.csl', lang: 'de-CH'}, []);
+        } finally {
+            bibliographerLoadStyleStub.restore();
+        }
+        assertSpyCall(bibliographerLoadStyleStub, 0, {
+            args: ['test.csl', 'de-CH']
         });
     });
 
@@ -313,7 +326,7 @@ describe('function test()', () => {
         }
         expect(passed).to.be.true;
         expect(failures).to.be.empty;
-        assertSpyCall(bibliographerLoadStyleStub, 0, {args: [styleName]});
+        assertSpyCall(bibliographerLoadStyleStub, 0, {args: [styleName, undefined]});
     });
 
     it('can use input defined globally', () => {
