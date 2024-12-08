@@ -201,6 +201,20 @@ describe('function validateTestSpecification()', () => {
     expect(e[0]).toMatch(/citations/);
   });
 
+  it('reports when an array item in a test should have been a string', () => {
+    let spec = {
+      style: 'minimal.csl',
+      tests: [
+        { lang: 'de_CH', citations: [ { Author: 'Title' } ] },
+        { lang: 'fr_FR', citations: [ 'Correct', 'Correct' ] }
+      ]
+    };
+    let [v, e] = validateTestSpecification(spec);
+    expect(v).toBe(false);
+    expect(e).toHaveLength(1);
+    expect(e).toMatch(/1st test/);
+  });
+
   /* Both global and in tests */
   it('reports all errors', () => {
     let spec = {

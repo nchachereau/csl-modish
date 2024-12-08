@@ -202,7 +202,7 @@ export function validateTestSpecification(specification) {
         }
         // "all entries in "citations" must be strings"
         // "all entries in "tests" should define properties such as…"
-        let err = `all entries in "${property}" ${errorDescription}, `;
+        let err = `all entries in "${property}"${level} ${errorDescription}, `;
         if (items.length == getPropertyByPath(specification, error.instancePath).length) {
           err += `but none ${pluralize(verb)}. ${advice}`;
         } else {
