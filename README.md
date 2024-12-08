@@ -39,12 +39,12 @@ style.
     - Mills1959
 
   citations:
-    - (Thompson, 1963/1991, p. 128)
-    - (Mills, 1956/1959)
+    - "(Thompson, 1963/1991, p. 128)"
+    - "(Mills, 1956/1959)"
 
   bibliography:
-    - Mills, C. W. (1959). <i>The power elite</i>. Oxford University Press. (Original work published 1956)
-    - Thompson, E. P. (1991). <i>The Making of the English working class</i>. Penguin Books. (Original work published 1963)
+    - "Mills, C. W. (1959). <i>The power elite</i>. Oxford University Press. (Original work published 1956)"
+    - "Thompson, E. P. (1991). <i>The Making of the English working class</i>. Penguin Books. (Original work published 1963)"
   ```
 
   The first line (`style`) states the path of the CSL file to be tested; 
@@ -123,18 +123,18 @@ The expected **citations** are also given as a list, in the same order as the
 `input`:
 ```yaml
 citations:
-- Thompson (1991 [1963]), <i>The Making…</i>, p. 128.
-- Piketty (2014), <i>Capital…</i>; Mills (1956), <i>The Power Elite</i>.
-- Ibid.
+- "Thompson (1991 [1963]), <i>The Making…</i>, p. 128."
+- "Piketty (2014), <i>Capital…</i>; Mills (1956), <i>The Power Elite</i>."
+- "Ibid."
 ```
 
 The expected **bibliography** is also a list, but in the expected order (for
 instance, ordered alphabetically if that is what the style specifies):
 ```yaml
 bibliography:
-- Mills, C. W. (1959). <i>The power elite</i>. Oxford University Press. (Original work published 1956)
-- Piketty, T. (2014). <i>Capital in the Twenty-First Century</i>. Harvard University Press
-- Thompson, E. P. (1991). <i>The Making of the English working class</i>. Penguin Books. (Original work published 1963)
+- "Mills, C. W. (1959). <i>The power elite</i>. Oxford University Press. (Original work published 1956)"
+- "Piketty, T. (2014). <i>Capital in the Twenty-First Century</i>. Harvard University Press"
+- "Thompson, E. P. (1991). <i>The Making of the English working class</i>. Penguin Books. (Original work published 1963)"
 ```
 
 ### several tests in the same file
@@ -151,12 +151,12 @@ tests:
   input:
   - ThompsonMaking
   citations:
-  - (Thompson)
+  - "(Thompson)"
 - style: style2.csl
   input:
   - MillsPower
   citations:
-  - (Mills, 1959)
+  - "(Mills, 1959)"
 ```
 
 Instead of specifying `input` and `style` in the entries in `tests`, they can
@@ -171,13 +171,13 @@ input:
 tests:
 - style: style1.csl
   citations:
-  - (Thompson)
-  - (Mills)
+  - "(Thompson)"
+  - "(Mills)"
 
 - style: style2.csl
   citations:
-  - (Thompson, 1991)
-  - (Mills, 1959)
+  - "(Thompson, 1991)"
+  - "(Mills, 1959)"
 ```
 
 Note that when `tests` is specified, global definitions of `citations` and
