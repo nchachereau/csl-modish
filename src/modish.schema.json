@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nchachereau.ch/csl-modish/modish.schema.json",
+  "title": "Modish CSL Test",
+  "description": "Test file specifying how citations and/or bibliography should be formatted by a CSL style",
+  "$defs": {
+    "style": {
+      "description": "Relative path to CSL file to be tested",
+      "type": "string"
+    },
+    "lang": {
+      "description": "Language/locale to be used for formatting citations and bibliography",
+      "type": "string"
+    },
+    "input": {
+      "description": "Identifiers of bibliography items to be formatted",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "citations": {
+      "description": "Expected formatted citations",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "bibliography": {
+      "description": "Expected formatted bibliography",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "style": { "$ref": "#/$defs/style" },
+    "lang": { "$ref": "#/$defs/lang" },
+    "input": { "$ref": "#/$defs/input" },
+    "citations": { "$ref": "#/$defs/citations" },
+    "bibliography": { "$ref": "#/$defs/bibliography" },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "style": { "$ref": "#/$defs/style" },
+          "lang": { "$ref": "#/$defs/lang" },
+          "input": { "$ref": "#/$defs/input" },
+          "citations": { "$ref": "#/$defs/citations" },
+          "bibliography": { "$ref": "#/$defs/bibliography" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

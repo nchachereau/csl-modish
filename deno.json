@@ -6,6 +6,7 @@
     "imports": {
         "citeproc": "npm:citeproc@2",
         "commander": "npm:commander@12",
-        "diff": "npm:diff@6"
+        "diff": "npm:diff@6",
+        "ajv": "npm:ajv@8"
     }
 }
