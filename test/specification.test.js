@@ -26,6 +26,18 @@ describe('function validateTestSpecification()', () => {
     expect(e[0]).toMatch(/\bunknown\b/i);
     expect(e[0]).toMatch(/\bnotvalid\b/);
     expect(e[0]).toMatch(/\balso_invalid\b/);
+    // no suggestions
+    expect(e[0]).not.toMatch(/Did you mean/);
+  });
+
+  it('suggests corrections to misspellings', () => {
+    let spec = { styl: 'minimal.csl', alng: 'de_CH' };
+    let [v, e] = validateTestSpecification(spec);
+    expect(v).toBe(false);
+    expect(e).toHaveLength(1);
+    expect(e[0]).toMatch(/\bunknown\b/i);
+    expect(e[0]).toMatch(/\bstyl\b/);
+    expect(e[0]).toMatch(/\bstyle\b/);
   });
 
   it('reports when a property should have been a string', () => {

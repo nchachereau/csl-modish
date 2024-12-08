@@ -1,5 +1,6 @@
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import schema from './modish.schema.json' with { type: 'json' };
+import { suggestSimilar } from './suggestSimilar.js';
 
 const ajv = new Ajv2020({allErrors: true});
 const validate = ajv.compile(schema);
@@ -154,18 +155,39 @@ export function validateTestSpecification(specification) {
       }
     // unknown properties
     } else if (error.keyword == 'additionalProperties') {
-      unknownProperties.push(error.params.additionalProperty);
+      let similar = suggestSimilar(
+        error.params.additionalProperty,
+        Object.keys(getPropertyByPath(schema, error.schemaPath)['properties'])
+      )
+      unknownProperties.push([
+        error.params.additionalProperty,
+        similar
+      ]);
     }
   }
   // warnings about unknown properties
   if (unknownProperties.length) {
     let warning = 'found unknown ';
     if (unknownProperties.length > 1) {
-      warning += 'properties';
-      warning += unknownProperties.slice(0, -1).map((p) => `'${p}'`).join(', ');
-      warning += ` and '${unknownProperties.at(-1)}'.`;
+      warning += 'properties ';
+      warning += unknownProperties.slice(0, -1).map((p) => `"${p[0]}"`).join(', ');
+      warning += ` and "${unknownProperties.at(-1)[0]}". `;
+      let suggestions = unknownProperties.map((p) => {
+        if (p[1].length === 0) {
+          return '';
+        }
+        return `${p[1].map((pp) => `"${pp}"`).join(' or ')} instead of "${p[0]}"`;
+      }).filter((sugg) => sugg !== '');
+      if (suggestions.length) {
+        warning += `Did you mean ${suggestions.slice(0, -1).join(', ')}`;
+        warning += ` and ${suggestions.at(-1)}?`;
+      }
     } else {
-      warning += `property '${unknownProperties[0]}'.`;
+      let [property, suggestions] = unknownProperties[0];
+      warning += `property "${property}".`;
+      if (suggestions.length) {
+        warning += ` Did you mean ${suggestions.map((s) => `"${s}"`).join(' or ')}?`;
+      }
     }
     errorMessages.push(warning);
   }
