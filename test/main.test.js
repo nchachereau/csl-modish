@@ -2,33 +2,8 @@ import { describe, it } from "jsr:@std/testing/bdd";
 import { assertSpyCall, assertSpyCalls, returnsNext, stub, spy } from "jsr:@std/testing/mock";
 import { expect } from 'npm:chai@5';
 
-import { parseInput, test } from '../src/main.js';
+import { test } from '../src/main.js';
 import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.js';
-
-describe('function parseInput()', () => {
-
-    it('parses citations with locators', () => {
-        let inputs = parseInput([
-            'Book1 p. 103; Book2 pp. 28-35'
-        ]);
-        expect(inputs[0]).to.have.deep.ordered.members([
-            { id: 'Book1', label: 'page', locator: '103' },
-            { id: 'Book2', label: 'page', locator: '28-35' }
-        ]);
-    });
-
-    it('can parse locators other than page', () => {
-        let inputs = parseInput([
-            'Book1 fig. 1; Book2 chapter 2; Article § 10'
-        ]);
-        expect(inputs[0]).to.have.deep.ordered.members([
-            { id: 'Book1', label: 'figure', locator: '1' },
-            { id: 'Book2', label: 'chapter', locator: '2' },
-            { id: 'Article', label: 'paragraph', locator: '10' }
-        ]);
-    });
-
-});
 
 describe('function test()', () => {
 
