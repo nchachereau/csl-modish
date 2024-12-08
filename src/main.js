@@ -7,7 +7,7 @@ import { walk } from 'jsr:@std/fs/walk';
 import * as Diff from 'diff';
 
 import { Bibliographer } from './bibliographer.js';
-import { parseInput } from './specification.js';
+import { validateTestSpecification, parseInput } from './specification.js';
 import metadata from '../deno.json' with { type: 'json' };
 
 function diffWithColors(expected, actual) {
@@ -171,7 +171,17 @@ async function testCommand(testFile, options) {
 
         let spec;
         try {
-            spec = yaml.parse(await Deno.readTextFile(testFile));
+            spec = yaml.parse(await Deno.readTextFile(testFile), {schema: 'failsafe'});
+            let [valid, errors] = validateTestSpecification(spec);
+            if (!valid) {
+                for (const err of errors) {
+                    console.error(
+                        colors.bold(`Error encountered when loading file ${testFile}: `)
+                            + err
+                    )
+                }
+                Deno.exit(3);
+            }
         } catch(err) {
             if (err.code == 'ENOENT') {
                 console.error(`No such test file ${testFile}`);
