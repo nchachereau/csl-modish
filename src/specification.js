@@ -90,10 +90,10 @@ export function validateTestSpecification(specification) {
         let properties = Object.keys(_schema['properties']);
         let propertiesStr;
         if (properties.length < 3) {
-          propertiesStr = properties.map((p) => `'${p}'`).join(' and ');
+          propertiesStr = properties.map((p) => `"${p}"`).join(' and ');
         } else {
-          propertiesStr = properties.slice(0, -1).map((p) => `'${p}'`).join(', ');
-          propertiesStr += ` and '${properties.at(-1)}'`;
+          propertiesStr = properties.slice(0, -1).map((p) => `"${p}"`).join(', ');
+          propertiesStr += ` and "${properties.at(-1)}"`;
         }
         errorDescription = `should define properties such as ${propertiesStr}`;
         verb = 'does';
@@ -136,9 +136,9 @@ export function validateTestSpecification(specification) {
         } else {
           itemsStr = `${items.at(-1)} entry`;
         }
-        // "all entries in 'citations' must be strings"
-        // "all entries in 'tests' should define properties such as…"
-        let err = `all entries in '${property}' ${errorDescription}, `;
+        // "all entries in "citations" must be strings"
+        // "all entries in "tests" should define properties such as…"
+        let err = `all entries in "${property}" ${errorDescription}, `;
         if (items.length == getPropertyByPath(specification, error.instancePath).length) {
           err += `but none ${pluralize(verb)}. ${advice}`;
         } else {
@@ -146,11 +146,11 @@ export function validateTestSpecification(specification) {
         }
         errorMessages.push(err);
       } else if (property !== undefined) {
-        // "'style' must be a string. Did you forget to add quotation marks?"
-        // "'citations' in the 2nd test must be a list. "
-        errorMessages.push(`'${property}'${level} ${errorDescription}. ${advice}`);
+        // '"style" must be a string. Did you forget to add quotation marks?'
+        // '"citations"' in the 2nd test must be a list. '
+        errorMessages.push(`"${property}"${level} ${errorDescription}. ${advice}`);
       } else {
-        // "the test file should define properties such as…"
+        // 'the test file should define properties such as…''
         errorMessages.push(`the test file ${errorDescription}. ${advice}`);
       }
     // unknown properties
