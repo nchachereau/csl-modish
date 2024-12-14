@@ -11,10 +11,10 @@ import { validateTestSpecification, parseInput } from './specification.js';
 import metadata from '../deno.json' with { type: 'json' };
 
 function diffWithColors(expected, actual) {
-    let difference = Diff.diffChars(expected, actual);
+    const difference = Diff.diffChars(expected, actual);
     let coloredExpected = '';
     let coloredActual = '';
-    for (let part of difference) {
+    for (const part of difference) {
         if (part.added) {
             coloredActual += colors.bgRed(part.value);
         } else if (part.removed) {
@@ -29,18 +29,18 @@ function diffWithColors(expected, actual) {
 
 export function test(specification, items) {
     // if `tests` is not specified, assume that there is only one global test
-    let tests = specification.tests ?? [specification];
+    const tests = specification.tests ?? [specification];
 
     let passed = false;
-    let counts = { citations: [0, 0], bibliography: [0, 0] };
-    let failures = [];
-    for (let testCase of tests) {
+    const counts = { citations: [0, 0], bibliography: [0, 0] };
+    const failures = [];
+    for (const testCase of tests) {
         // if the test case does not specify the input, use the global definition
-        let inputs = parseInput(testCase.input ?? specification.input);
-        let bibliographer = new Bibliographer();
+        const inputs = parseInput(testCase.input ?? specification.input);
+        const bibliographer = new Bibliographer();
         // if the test case does not specify the style, use the globally defined style
-        let style = testCase.style ?? specification.style;
-        let lang = testCase.lang ?? specification.lang;
+        const style = testCase.style ?? specification.style;
+        const lang = testCase.lang ?? specification.lang;
         if (style === undefined) {
             failures.push({type: 'error', error: 'Please specify the path of the CSL style to test.'});
             continue;
@@ -69,7 +69,7 @@ export function test(specification, items) {
             continue;
         }
 
-        for (let input of inputs) {
+        for (const input of inputs) {
             try {
                 bibliographer.cite(input);
             } catch(err) {
@@ -84,11 +84,11 @@ export function test(specification, items) {
             }
         }
         if ('citations' in testCase) {
-            let outputCitations = bibliographer.getCitations();
-            let expectedCitations = testCase.citations;
-            let unmatchedCitations = [];
-            for (let [i, outputCitation] of outputCitations.entries()) {
-                let expected = expectedCitations[i];
+            const outputCitations = bibliographer.getCitations();
+            const expectedCitations = testCase.citations;
+            const unmatchedCitations = [];
+            for (const [i, outputCitation] of outputCitations.entries()) {
+                const expected = expectedCitations[i];
                 if (expected === undefined) {
                     unmatchedCitations.push(outputCitation);
                 } else if (outputCitation == expected) {
@@ -108,13 +108,13 @@ export function test(specification, items) {
             }
         }
         if ('bibliography' in testCase) {
-            let outputBibliography = bibliographer.getBibliography();
-            let expectedBiblio = testCase.bibliography;
+            const outputBibliography = bibliographer.getBibliography();
+            const expectedBiblio = testCase.bibliography;
             if (expectedBiblio.length !== outputBibliography.length ||
                 !(outputBibliography.every((val, i) => val === expectedBiblio[i]))) {
                 counts.bibliography[1]++;
-                let expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
-                let outputStr = outputBibliography.map((s) => `- ${s}`).join('\n');
+                const expectedStr = expectedBiblio.map((s) => `- ${s}`).join('\n');
+                const outputStr = outputBibliography.map((s) => `- ${s}`).join('\n');
                 failures.push({type: 'bibliography', expected: expectedStr, actual: outputStr});
             } else {
                 counts.bibliography[0]++;
@@ -163,8 +163,8 @@ async function testCommand(testFile, options) {
     const verbose = (!quiet && options.verbose) ? true : false;
     const spinner = new Spinner({ message: 'Running tests…' });
 
-    let passes = [];
-    for (let testFile of testFiles) {
+    const passes = [];
+    for (const testFile of testFiles) {
         if (!quiet) {
             spinner.start();
         }
@@ -172,7 +172,7 @@ async function testCommand(testFile, options) {
         let spec;
         try {
             spec = yaml.parse(await Deno.readTextFile(testFile), {schema: 'failsafe'});
-            let [valid, errors] = validateTestSpecification(spec);
+            const [valid, errors] = validateTestSpecification(spec);
             if (!valid) {
                 for (const err of errors) {
                     console.error(
@@ -200,7 +200,7 @@ async function testCommand(testFile, options) {
 
         const [passed, counts, failures] = test(spec, references);
 
-        let checkMark = passed ? colors.green('✔') : colors.red('✘');
+        const checkMark = passed ? colors.green('✔') : colors.red('✘');
         if (verbose || (!quiet && failures.length)) {
             spinner.stop();
             console.log(` ${checkMark} ${testFile}`);
@@ -214,15 +214,15 @@ async function testCommand(testFile, options) {
         }
 
         if (!quiet) {
-            for (let fail of failures) {
+            for (const fail of failures) {
                 if (fail.type == 'error') {
                     console.log(`   - ${colors.brightRed('error')}: ${fail.error.replace(/\n/g, '\n     ')}`);
                 } else if (fail.type == 'citation') {
-                    let [expected, actual] = diffWithColors(fail.expected, fail.actual);
+                    const [expected, actual] = diffWithColors(fail.expected, fail.actual);
                     console.log(`   - expected citation:\n     ${expected}`);
                     console.log(`     but output was:\n     ${actual}`);
                 } else if (fail.type == 'bibliography') {
-                    let [expected, actual] = diffWithColors(fail.expected, fail.actual);
+                    const [expected, actual] = diffWithColors(fail.expected, fail.actual);
                     console.log('   - expected following bibliography:');
                     console.log(expected.replace(/^- /gm, '      - '));
                     console.log('     but output was:');
@@ -246,8 +246,8 @@ async function testCommand(testFile, options) {
     const allPassed = !passes.includes(false);
 
     if (!quiet) {
-        let checkMark = allPassed ? colors.green('✔') : colors.red('✘');
-        let numPassed = passes.filter((passed) => passed).length;
+        const checkMark = allPassed ? colors.green('✔') : colors.red('✘');
+        const numPassed = passes.filter((passed) => passed).length;
         console.log(`${checkMark} Ran ${passes.length} test files, ${numPassed} passed`);
     }
 

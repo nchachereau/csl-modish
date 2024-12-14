@@ -6,7 +6,7 @@ import { parseInput, validateTestSpecification } from '../src/specification.js';
 describe('function parseInput()', () => {
 
     it('parses citations with locators', () => {
-        let inputs = parseInput([
+        const inputs = parseInput([
             'Book1 p. 103; Book2 pp. 28-35'
         ]);
         expect(inputs[0]).toMatchObject([
@@ -16,7 +16,7 @@ describe('function parseInput()', () => {
     });
 
     it('can parse locators other than page', () => {
-        let inputs = parseInput([
+        const inputs = parseInput([
             'Book1 fig. 1; Book2 chapter 2; Article § 10'
         ]);
         expect(inputs[0]).toMatchObject([
@@ -30,12 +30,12 @@ describe('function parseInput()', () => {
 describe('function validateTestSpecification()', () => {
 
   it('validates a valid test specification', () => {
-    let spec = {
+    const spec = {
       style: 'minimal.csl',
       input: ['Test'],
       citations: ['Tester (2024): Test']
     };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(true);
     expect(e).toHaveLength(0);
   });
@@ -43,8 +43,8 @@ describe('function validateTestSpecification()', () => {
   /* Global level */
 
   it('reports unknown properties at the global level', () => {
-    let spec = { notvalid: 'minimal.csl', also_invalid: 'de_CH' };
-    let [v, e] = validateTestSpecification(spec);
+    const spec = { notvalid: 'minimal.csl', also_invalid: 'de_CH' };
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bunknown\b/i);
@@ -55,8 +55,8 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('suggests corrections to misspellings', () => {
-    let spec = { styl: 'minimal.csl', alng: 'de_CH' };
-    let [v, e] = validateTestSpecification(spec);
+    const spec = { styl: 'minimal.csl', alng: 'de_CH' };
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bunknown\b/i);
@@ -65,8 +65,8 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('reports when a property should have been a string', () => {
-    let spec = { style: { 'Journal Main Title': 'Subtitle.csl' } };
-    let [v, e] = validateTestSpecification(spec);
+    const spec = { style: { 'Journal Main Title': 'Subtitle.csl' } };
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     // mentions property
@@ -78,8 +78,8 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('reports when a property should have been an array', () => {
-    let spec = { citations: 'minimal.csl' };
-    let [v, e] = validateTestSpecification(spec);
+    const spec = { citations: 'minimal.csl' };
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\blist\b/);
@@ -89,13 +89,13 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('gives precisions when there is a possible confusion', () => {
-    let spec = {
+    const spec = {
       style: [ { mystyle: 'minimal.csl' } ],
       tests: [
         { style: 'other.csl' }
       ]
     };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bstring\b/);
@@ -103,12 +103,12 @@ describe('function validateTestSpecification()', () => {
   })
 
   it('reports when the specification is not an object', () => {
-    let spec = [
+    const spec = [
       { style: { 'Journal Main Title': 'Subtitle.csl' } },
       { citations: [ 'Citation1' ] },
       { bibliography: [ 'Bibliography' ] }
     ];
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\btest file\b/i);
@@ -121,8 +121,8 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('reports an invalid value in an array', () => {
-    let spec = { citations: [ { author: 'title' }, 'xxx' ] };
-    let [v, e] = validateTestSpecification(spec);
+    const spec = { citations: [ { author: 'title' }, 'xxx' ] };
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     // mentions the property
@@ -134,11 +134,11 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('reports when no value is valid in an array', () => {
-    let spec = { citations: [
+    const spec = { citations: [
       { author: 'title' },
       { author2: 'title2' }
     ] };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     // mentions the property
@@ -153,19 +153,19 @@ describe('function validateTestSpecification()', () => {
   /* Inside tests array */
 
   it('reports unknown properties in test suite', () => {
-    let spec = { tests: [ { notvalid: 'xxx' } ] };
-    let [v, e] = validateTestSpecification(spec);
+    const spec = { tests: [ { notvalid: 'xxx' } ] };
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/notvalid/);
   });
 
   it('reports when a property inside a test should have been a string', () => {
-    let spec = { tests: [
+    const spec = { tests: [
       { },
       { style: [ 'minimal.csl', 'other.csl' ] }
     ] };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bstyle\b/);
@@ -174,12 +174,12 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('reports when a property inside a test should have been an array', () => {
-    let spec = { tests: [
+    const spec = { tests: [
       { },
       { },
       { citations: 'xxx' }
     ] };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bcitations\b/);
@@ -188,10 +188,10 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('reports when a test is not an object', () => {
-    let spec = {
+    const spec = {
       tests: [ [ { citations: [ 'Citation1', 'Citation2' ] } ] ]
     };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\btests\b/i);
@@ -202,14 +202,14 @@ describe('function validateTestSpecification()', () => {
   });
 
   it('reports when an array item in a test should have been a string', () => {
-    let spec = {
+    const spec = {
       style: 'minimal.csl',
       tests: [
         { lang: 'de_CH', citations: [ { Author: 'Title' } ] },
         { lang: 'fr_FR', citations: [ 'Correct', 'Correct' ] }
       ]
     };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e).toMatch(/1st test/);
@@ -217,7 +217,7 @@ describe('function validateTestSpecification()', () => {
 
   /* Both global and in tests */
   it('reports all errors', () => {
-    let spec = {
+    const spec = {
       styl: 'minimal.csl',
       input: 'Key1, Key2',
       tests: [
@@ -225,7 +225,7 @@ describe('function validateTestSpecification()', () => {
         { bibliography: [ 'Biblio2' ] }
       ]
     };
-    let [v, e] = validateTestSpecification(spec);
+    const [v, e] = validateTestSpecification(spec);
     expect(v).toBe(false);
     expect(e).toHaveLength(3);
     expect(e[0]).toMatch(/input/);

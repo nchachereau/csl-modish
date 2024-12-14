@@ -41,7 +41,7 @@ describe('Bibliographer', () => {
     it('returns formatted citations', () => {
         bibliographer.cite([{ id: 'Book1' }, { id: 'Article1' } ]);
         bibliographer.cite([{ id: 'Book2' } ]);
-        let citations = bibliographer.getCitations();
+        const citations = bibliographer.getCitations();
         expect(citations).to.have.ordered.members([
             'Smith 2024a; Doe 1990.',
             'Smith 2024b.'
@@ -51,13 +51,13 @@ describe('Bibliographer', () => {
     it('formats subsequent citations', () => {
         bibliographer.cite([{ id: 'Book1' }]);
         bibliographer.cite([{ id: 'Book1' } ]);
-        let citations = bibliographer.getCitations();
+        const citations = bibliographer.getCitations();
         expect(citations[1]).to.equal('ibid.');
     });
 
     it('formats a citation with a locator', () => {
         bibliographer.cite([{ id: 'Book1', label: 'page', locator: '102-103' }]);
-        let citations = bibliographer.getCitations();
+        const citations = bibliographer.getCitations();
         expect(citations[0]).to.equal('Smith 2024 102–103.');
     });
 
@@ -71,13 +71,13 @@ describe('Bibliographer', () => {
         bibliographer.registerItems(items);
         bibliographer.cite([{ id: 'Book1' }]);
         bibliographer.cite([{ id: 'Book1' }]);
-        let citations = bibliographer.getCitations();
+        const citations = bibliographer.getCitations();
         expect(citations[1]).to.equal('ebd.');
     });
 
     it('formats a bibliography with cited items', () => {
         bibliographer.cite([{ id: 'Book1' }, { id: 'Book2' }, { id: 'Article1' }]);
-        let bibliography = bibliographer.getBibliography();
+        const bibliography = bibliographer.getBibliography();
         expect(bibliography).to.have.ordered.members([
             'John Smith, <i>Book1</i>, 2024a.',
             'William Smith, <i>Book2</i>, 2024b.',

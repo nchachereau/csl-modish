@@ -3,7 +3,7 @@ import * as path from "jsr:@std/path";
 
 export class UnregisteredItemError extends Error {
     constructor(itemIdentifier) {
-        let message = `Item ${itemIdentifier} not registered. Pass it to registerItems() first.`;
+        const message = `Item ${itemIdentifier} not registered. Pass it to registerItems() first.`;
         super(message);
         this.name = "UnregisteredItemError";
         this.erroneousIdentifier = itemIdentifier;
@@ -19,7 +19,7 @@ export class Bibliographer {
     loadStyle(stylePath, lang='en') {
         const sys = {
             retrieveLocale: (l) => {
-                let localeFilePath = path.join(
+                const localeFilePath = path.join(
                     import.meta.dirname,
                     '..',
                     'locales',
@@ -40,23 +40,23 @@ export class Bibliographer {
     }
 
     cite(items) {
-        let noteIndex = this.citations.length+1;
-        for (let item of items) {
+        const noteIndex = this.citations.length+1;
+        for (const item of items) {
             if (!(item.id in this.items)) {
                 throw new UnregisteredItemError(item.id);
             }
         }
-        let citation = {
+        const citation = {
             citationItems: items,
             properties: { noteIndex: noteIndex }
         };
-        let [status, results] = this.processor.processCitationCluster(
+        const [_status, results] = this.processor.processCitationCluster(
             citation,
             this.citations.map((c) => [c[2], c[0]]),
             []
         );
-        for (let cited of results) {
-            let [pos, formatted, id] = cited;
+        for (const cited of results) {
+            const [pos, formatted, id] = cited;
             this.citations[pos] = [pos+1, formatted, id];
         }
     }
@@ -66,7 +66,7 @@ export class Bibliographer {
     }
 
     getBibliography() {
-        let [params, entries] = this.processor.makeBibliography();
+        const [_params, entries] = this.processor.makeBibliography();
         const pattern = /<div class="csl-entry">(.+)<\/div>/;
         return entries.map((entry) => entry.trim().replace(pattern, '$1'));
     }

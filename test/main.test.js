@@ -8,7 +8,7 @@ import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.js';
 describe('function test()', () => {
 
     it('registers items to cite', () => {
-        let items = [
+        const items = [
             { 'id': 'Book1', 'type': 'book',
               'author': [ { 'family': 'Smith', 'given': 'John'} ],
               'title': 'Book1', 'issued': { 'date-parts': [[ 2024, 1, 1 ]] }
@@ -33,8 +33,8 @@ describe('function test()', () => {
     });
 
     it('informs that all citations matched their expected output', () => {
-        let input = [ 'Book1', 'Book2' ];
-        let citations = [ 'Smith 2024a.', 'Smith 2024b.' ];
+        const input = [ 'Book1', 'Book2' ];
+        const citations = [ 'Smith 2024a.', 'Smith 2024b.' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
@@ -64,8 +64,8 @@ describe('function test()', () => {
     });
 
     it('reports citations not matching their expected output', () => {
-        let input = [ 'Book1', 'Book2' ];
-        let citations = [ 'Smith 2012.', 'Smith 2015.' ];
+        const input = [ 'Book1', 'Book2' ];
+        const citations = [ 'Smith 2012.', 'Smith 2015.' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
@@ -91,8 +91,8 @@ describe('function test()', () => {
     });
 
     it('reports that the bibliography matches the expected output', () => {
-        let input = [ 'Book1', 'Book2' ];
-        let bibliography = ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.'];
+        const input = [ 'Book1', 'Book2' ];
+        const bibliography = ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
@@ -121,8 +121,8 @@ describe('function test()', () => {
     });
 
     it('reports bibliography not matching expected output', () => {
-        let input = [ 'Book1', 'Book2' ];
-        let bibliography = ['Jane Doe, Book2, 1990.', 'John Smith, Book1, 2024.'];
+        const input = [ 'Book1', 'Book2' ];
+        const bibliography = ['Jane Doe, Book2, 1990.', 'John Smith, Book1, 2024.'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
@@ -156,7 +156,7 @@ describe('function test()', () => {
     });
 
     it('reports failure if neither citation nor bibliography are specified', () => {
-        let input = [ 'Book1', 'Book2' ];
+        const input = [ 'Book1', 'Book2' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
@@ -166,9 +166,9 @@ describe('function test()', () => {
             ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.']
         ]));
 
-        let passed, counts, failures;
+        let passed, _counts, failures;
         try {
-            [passed, counts, failures] = test({style: 'style.csl', input: input}, []);
+            [passed, _counts, failures] = test({style: 'style.csl', input: input}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -184,9 +184,9 @@ describe('function test()', () => {
 
     it('loads the style specified in the specification', () => {
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        let input = [];
+        const input = [];
         try {
-            test({style: 'style.csl', input: input, style: 'test.csl'}, []);
+            test({input: input, style: 'test.csl'}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
         }
@@ -197,7 +197,7 @@ describe('function test()', () => {
 
     it('uses the language specified in the test', () => {
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        let input = [];
+        const input = [];
         try {
             test({input: input, style: 'test.csl', lang: 'de-CH'}, []);
         } finally {
@@ -210,9 +210,9 @@ describe('function test()', () => {
 
     it('reports a failure when style file does not exist', () => {
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([]));
-        let passed, counts, failures;
+        let passed, _counts, failures;
         try {
-            [passed, counts, failures] = test(
+            [passed, _counts, failures] = test(
                 {
                     style: 'xtestz.csl',
                     input: [ 'Book1' ],
@@ -228,13 +228,13 @@ describe('function test()', () => {
     });
 
     it('reports a failure when identifier not found in references', () => {
-        let input = ['Book1'];
+        const input = ['Book1'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([new UnregisteredItemError(input[0])]));
 
-        let passed, counts, failures;
+        let passed, _counts, failures;
         try {
-            [passed, counts, failures] = test(
+            [passed, _counts, failures] = test(
                 {
                     style: 'somestyle.csl',
                     input: input,
@@ -251,18 +251,18 @@ describe('function test()', () => {
     });
 
     it('supports series of tests', () => {
-        let localInput = [ 'Book1', 'Book2' ];
-        let globalInput = [ 'Wrong1' ];
-        let citations = [ 'Smith 2012.', 'Smith 2015.' ];
+        const localInput = [ 'Book1', 'Book2' ];
+        const globalInput = [ 'Wrong1' ];
+        const citations = [ 'Smith 2012.', 'Smith 2015.' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             ['Smith 2012.', 'Doe 1995.']
         ]));
 
-        let passed, counts, failures;
+        let passed, _counts, failures;
         try {
-            [passed, counts, failures] = test(
+            [passed, _counts, failures] = test(
                 {
                     style: 'style.csl',
                     input: globalInput,
@@ -282,18 +282,18 @@ describe('function test()', () => {
     });
 
     it('uses style defined in test case', () => {
-        let input = [ 'Book1', 'Book2' ];
-        let citations = [ 'Smith 2012.', 'Smith 2015.' ];
-        let styleName = 'test.csl';
+        const input = [ 'Book1', 'Book2' ];
+        const citations = [ 'Smith 2012.', 'Smith 2015.' ];
+        const styleName = 'test.csl';
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             citations
         ]));
 
-        let passed, counts, failures;
+        let passed, _counts, failures;
         try {
-            [passed, counts, failures] = test({tests: [{style: styleName, input: input, citations: citations}]}, []);
+            [passed, _counts, failures] = test({tests: [{style: styleName, input: input, citations: citations}]}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -305,18 +305,18 @@ describe('function test()', () => {
     });
 
     it('can use input defined globally', () => {
-        let input = [ 'Book1', 'Book2' ];
-        let citations = [ 'Smith 2012.', 'Smith 2015.' ];
-        let styleName = 'test.csl';
+        const input = [ 'Book1', 'Book2' ];
+        const citations = [ 'Smith 2012.', 'Smith 2015.' ];
+        const styleName = 'test.csl';
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             citations
         ]));
 
-        let passed, counts, failures;
+        let passed, _counts, failures;
         try {
-            [passed, counts, failures] = test(
+            [passed, _counts, failures] = test(
                 {
                     input: input,
                     tests: [
@@ -336,9 +336,9 @@ describe('function test()', () => {
     });
 
     it('should not use global expected outputs if input is defined in test case', () => {
-        let input = [ 'Book1', 'Book2' ];
-        let citations = ['Smith 2024.', 'Doe 1990.'];
-        let bibliography = ['Jane Doe, Book2, 1990.', 'John Smith, Book1, 2024.'];
+        const input = [ 'Book1', 'Book2' ];
+        const citations = ['Smith 2024.', 'Doe 1990.'];
+        const bibliography = ['Jane Doe, Book2, 1990.', 'John Smith, Book1, 2024.'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
@@ -348,9 +348,9 @@ describe('function test()', () => {
             ['Wrong Name, Other Book, 1990.', 'John Smith, Book1, 2024.']
         ]));
 
-        let passed, counts, failures;
+        let passed, _counts, failures;
         try {
-            [passed, counts, failures] = test(
+            [passed, _counts, failures] = test(
                 {
                     style: 'style.csl',
                     bibliography: bibliography,

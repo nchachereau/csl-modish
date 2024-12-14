@@ -43,13 +43,13 @@ const LOCATORS = {
 };
 
 export function parseInput(inputs) {
-    let parsedInputs = [];
-    for (let rawInput of inputs) {
-        let parsedInput = [];
-        let items = rawInput.split(';');
-        for (let item of items) {
-            let parts = item.trim().split(' ').map((part) => part.trim());
-            let citationItem = { 'id': parts[0] };
+    const parsedInputs = [];
+    for (const rawInput of inputs) {
+        const parsedInput = [];
+        const items = rawInput.split(';');
+        for (const item of items) {
+            const parts = item.trim().split(' ').map((part) => part.trim());
+            const citationItem = { 'id': parts[0] };
             if (parts.length > 1) {
                 if (parts[1] in LOCATORS) {
                     citationItem.label = LOCATORS[parts[1]];
@@ -80,7 +80,7 @@ function makeOrdinal(n) {
 }
 
 function getPropertyByPath(object, path, removeLast=true) {
-  let keys = path.split('/').filter((e) => e != '#' && e != '');
+  const keys = path.split('/').filter((e) => e != '#' && e != '');
   if (removeLast) {
     keys.pop();
   }
@@ -114,11 +114,11 @@ export function validateTestSpecification(specification) {
     return [true, []];
   }
 
-  let errorMessages = [];
+  const errorMessages = [];
   let lastArrayProperty;
   let erroneousItemsInCurrentArray = [];
-  let unknownProperties = [];
-  for (let error of validate.errors) {
+  const unknownProperties = [];
+  for (const error of validate.errors) {
     const propertyPath = error.instancePath.split('/').filter((e) => e !== '');
 
     // erroneous type
@@ -150,8 +150,8 @@ export function validateTestSpecification(specification) {
         advice = 'Did you forget to add quotation marks?';
       } else if (error.params.type == 'object') {
         // gather expected properties
-        let _schema = getPropertyByPath(schema, error.schemaPath);
-        let properties = Object.keys(_schema['properties']);
+        const _schema = getPropertyByPath(schema, error.schemaPath);
+        const properties = Object.keys(_schema['properties']);
         let propertiesStr;
         if (properties.length < 3) {
           propertiesStr = properties.map((p) => `"${p}"`).join(' and ');
@@ -180,7 +180,7 @@ export function validateTestSpecification(specification) {
         // error: wrong type in array
 
         // same array as previously?
-        let currentArrayProperty = propertyPath.slice(0, -1).join('/');
+        const currentArrayProperty = propertyPath.slice(0, -1).join('/');
         if (lastArrayProperty == currentArrayProperty) {
           erroneousItemsInCurrentArray.push(item);
           // same array, remove last message before pushing the updated message
@@ -192,7 +192,7 @@ export function validateTestSpecification(specification) {
         lastArrayProperty = currentArrayProperty;
 
         // prepare message
-        let items = erroneousItemsInCurrentArray.map(makeOrdinal);
+        const items = erroneousItemsInCurrentArray.map(makeOrdinal);
         let itemsStr;
         if (items.length > 1) {
           itemsStr = `${items.slice(0, -1).join(', ')} and ${items.at(-1)} entries`;
@@ -219,7 +219,7 @@ export function validateTestSpecification(specification) {
       }
     // unknown properties
     } else if (error.keyword == 'additionalProperties') {
-      let similar = suggestSimilar(
+      const similar = suggestSimilar(
         error.params.additionalProperty,
         Object.keys(getPropertyByPath(schema, error.schemaPath)['properties'])
       )
@@ -236,7 +236,7 @@ export function validateTestSpecification(specification) {
       warning += 'properties ';
       warning += unknownProperties.slice(0, -1).map((p) => `"${p[0]}"`).join(', ');
       warning += ` and "${unknownProperties.at(-1)[0]}". `;
-      let suggestions = unknownProperties.map((p) => {
+      const suggestions = unknownProperties.map((p) => {
         if (p[1].length === 0) {
           return '';
         }
@@ -247,7 +247,7 @@ export function validateTestSpecification(specification) {
         warning += ` and ${suggestions.at(-1)}?`;
       }
     } else {
-      let [property, suggestions] = unknownProperties[0];
+      const [property, suggestions] = unknownProperties[0];
       warning += `property "${property}".`;
       if (suggestions.length) {
         warning += ` Did you mean ${suggestions.map((s) => `"${s}"`).join(' or ')}?`;
