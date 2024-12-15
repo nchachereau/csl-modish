@@ -43,7 +43,7 @@ help: ## Show this help
 
 # zip files
 
-$(DIST_DIR)/$(APP_NAME)-$(VERSION)-windows-x86_64.zip: $(DIST_DIR)/$(APP_NAME)-$(VERSION)-windows-x86_64.exe
+$(DIST_DIR)/$(APP_NAME)-$(VERSION)-windows-%.zip: $(DIST_DIR)/$(APP_NAME)-$(VERSION)-windows-%.exe
 	cp $< $(DIST_DIR)/modish.exe
 	cd $(DIST_DIR) && zip $(notdir $@) modish.exe && rm modish.exe
 
