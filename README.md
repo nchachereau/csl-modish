@@ -16,7 +16,9 @@ style.
 
 ## Installation
 
-(tbd)
+For now, the easiest way to use Modish is to download the latest
+[release](https://github.com/nchachereau/csl-modish/releases) for your platform.
+Unzip the standalone executable and place it in your PATH.
 
 ## Getting started
 
@@ -54,9 +56,7 @@ style.
 
 - Run `modish test`.
 
-## Usage
-
-(tbd)
+  See also `modish test --help` for more options.
 
 ## Test Files
 
