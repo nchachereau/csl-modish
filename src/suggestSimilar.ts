@@ -2,7 +2,7 @@
 
 const maxDistance = 3;
 
-function editDistance(a, b) {
+function editDistance(a: string, b: string) {
   // https://en.wikipedia.org/wiki/Damerau–Levenshtein_distance
   // Calculating optimal string alignment distance, no substring is edited more than once.
   // (Simple implementation.)
@@ -12,7 +12,7 @@ function editDistance(a, b) {
     return Math.max(a.length, b.length);
 
   // distance between prefix substrings of a and b
-  const d = [];
+  const d: number[][] = [];
 
   // pure deletions turn a into empty string
   for (let i = 0; i <= a.length; i++) {
@@ -49,20 +49,16 @@ function editDistance(a, b) {
 
 /**
  * Find close matches, restricted to same number of edits.
- *
- * @param {string} word
- * @param {string[]} candidates
- * @returns {string}
  */
 
-export function suggestSimilar(word, candidates) {
+export function suggestSimilar(word: string, candidates: string[]): string[] {
   if (!candidates || candidates.length === 0) {
     return [];
   }
   // remove possible duplicates
   candidates = Array.from(new Set(candidates));
 
-  let similar = [];
+  let similar: string[] = [];
   let bestDistance = maxDistance;
   const minSimilarity = 0.4;
   candidates.forEach((candidate) => {

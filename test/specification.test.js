@@ -1,7 +1,7 @@
 import { describe, it } from "jsr:@std/testing/bdd";
 import { expect } from "jsr:@std/expect";
 
-import { parseInput, validateTestSpecification } from '../src/specification.js';
+import { parseInput, validateTestSpecification } from '../src/specification.ts';
 
 describe('function parseInput()', () => {
 

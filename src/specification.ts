@@ -1,8 +1,14 @@
-import { Ajv2020 } from 'ajv/dist/2020.js';
+import { Ajv2020, DefinedError } from 'ajv/dist/2020.js';
 import schema from './modish.schema.json' with { type: 'json' };
-import { suggestSimilar } from './suggestSimilar.js';
+import { suggestSimilar } from './suggestSimilar.ts';
 
-const LOCATORS = {
+type CiteItem = {
+  id: string,
+  locator?: string,
+  label?: string
+};
+
+const LOCATORS: Record<string, string> = {
     'bk.': 'book',
     'bks.': 'book',
     'chap.': 'chapter',
@@ -42,14 +48,14 @@ const LOCATORS = {
     'vols.': 'volume',
 };
 
-export function parseInput(inputs) {
-    const parsedInputs = [];
+export function parseInput(inputs: string[]) {
+    const parsedInputs: Object[][] = [];
     for (const rawInput of inputs) {
-        const parsedInput = [];
+        const parsedInput: Object[] = [];
         const items = rawInput.split(';');
         for (const item of items) {
-            const parts = item.trim().split(' ').map((part) => part.trim());
-            const citationItem = { 'id': parts[0] };
+            const parts = item.trim().split(' ').map((part: string) => part.trim());
+            const citationItem: CiteItem = { 'id': parts[0] };
             if (parts.length > 1) {
                 if (parts[1] in LOCATORS) {
                     citationItem.label = LOCATORS[parts[1]];
@@ -69,9 +75,9 @@ export function parseInput(inputs) {
 const ajv = new Ajv2020({allErrors: true});
 const validate = ajv.compile(schema);
 
-function makeOrdinal(n) {
+function makeOrdinal(n: number): string {
   // we assume that n < 111
-  const endings = { 1: 'st', 2: 'nd', 3: 'rd' };
+  const endings: Record<number, string> = { 1: 'st', 2: 'nd', 3: 'rd' };
   const last_digit = n % 10;
   if (last_digit in endings) {
     return n + endings[last_digit];
@@ -79,15 +85,19 @@ function makeOrdinal(n) {
   return n + 'th';
 }
 
-function getPropertyByPath(object, path, removeLast=true) {
+function getPropertyByPath(object: Record<string, any>, path: string, removeLast?: boolean): Record<string, any>;
+function getPropertyByPath(object: Array<any>, path: string, removeLast?: boolean): Array<any>;
+function getPropertyByPath(object: Record<string, any> | Array<any>, path: string, removeLast=true) {
   const keys = path.split('/').filter((e) => e != '#' && e != '');
   if (removeLast) {
     keys.pop();
   }
   let _object = object;
   for (const key of keys) {
-    if (/[0-9]+/.test(key)) {
-      _object = _object.at(Number(key));
+    if (Array.isArray(_object)) {
+      if (/[0-9]+/.test(key)) {
+        _object = _object.at(Number(key));
+      }
     } else {
       _object = _object[key];
     }
@@ -95,7 +105,7 @@ function getPropertyByPath(object, path, removeLast=true) {
   return _object;
 }
 
-function pluralize(verbForm) {
+function pluralize(verbForm: string) {
   if (verbForm == 'is') {
     return 'are';
   } else if (verbForm == 'does') {
@@ -107,25 +117,25 @@ function pluralize(verbForm) {
   }
 }
 
-export function validateTestSpecification(specification) {
+export function validateTestSpecification(specification: Object) {
   const valid = validate(specification);
 
   if (valid) {
     return [true, []];
   }
 
-  const errorMessages = [];
-  let lastArrayProperty;
-  let erroneousItemsInCurrentArray = [];
-  const unknownProperties = [];
-  for (const error of validate.errors) {
-    const propertyPath = error.instancePath.split('/').filter((e) => e !== '');
+  const errorMessages: string[] = [];
+  let lastArrayProperty: string = '';
+  let erroneousItemsInCurrentArray: number[] = [];
+  const unknownProperties: [string, string[]][] = [];
+  for (const error of validate.errors as DefinedError[]) {
+    const propertyPath = error.instancePath.split('/').filter((e: string) => e !== '');
 
     // erroneous type
     if (error.keyword == 'type') {
       let property = propertyPath.at(-1);
-      let item;
-      if (/^[0-9]+$/.test(property)) {
+      let item: number = -1;
+      if (property !== undefined && /^[0-9]+$/.test(property)) {
         property = propertyPath.at(-2);
         item = Number(propertyPath.at(-1)) + 1;
       }
@@ -140,19 +150,19 @@ export function validateTestSpecification(specification) {
         level = ` in the ${ord} test`;
       }
 
-      let errorDescription;
+      let errorDescription: string = '';
       let verb = 'is';
       let advice = '';
       if (error.params.type == 'array') {
-        errorDescription = (item !== undefined) ? 'must be lists' : 'must be a list';
+        errorDescription = (item !== -1) ? 'must be lists' : 'must be a list';
       } else if (error.params.type == 'string') {
-        errorDescription = (item !== undefined) ? 'must be strings' : 'must be a string';
+        errorDescription = (item !== -1) ? 'must be strings' : 'must be a string';
         advice = 'Did you forget to add quotation marks?';
       } else if (error.params.type == 'object') {
         // gather expected properties
         const _schema = getPropertyByPath(schema, error.schemaPath);
         const properties = Object.keys(_schema['properties']);
-        let propertiesStr;
+        let propertiesStr: string;
         if (properties.length < 3) {
           propertiesStr = properties.map((p) => `"${p}"`).join(' and ');
         } else {
@@ -166,7 +176,7 @@ export function validateTestSpecification(specification) {
           Array.isArray(getPropertyByPath(specification, error.instancePath, false)) &&
             _schema['type'] != 'array'
         ) {
-          if (item) {
+          if (item !== -1) {
             advice = 'It seems the';
             advice += (property == 'tests') ? ' tests' : ' entries';
             advice += ' have been erroneously written as lists.';
@@ -176,7 +186,7 @@ export function validateTestSpecification(specification) {
         }
       }
 
-      if (item !== undefined) {
+      if (item !== -1) {
         // error: wrong type in array
 
         // same array as previously?
@@ -193,7 +203,7 @@ export function validateTestSpecification(specification) {
 
         // prepare message
         const items = erroneousItemsInCurrentArray.map(makeOrdinal);
-        let itemsStr;
+        let itemsStr: string;
         if (items.length > 1) {
           itemsStr = `${items.slice(0, -1).join(', ')} and ${items.at(-1)} entries`;
           verb = pluralize(verb);
@@ -235,12 +245,12 @@ export function validateTestSpecification(specification) {
     if (unknownProperties.length > 1) {
       warning += 'properties ';
       warning += unknownProperties.slice(0, -1).map((p) => `"${p[0]}"`).join(', ');
-      warning += ` and "${unknownProperties.at(-1)[0]}". `;
+      warning += ` and "${unknownProperties.at(-1)?.[0]}". `;
       const suggestions = unknownProperties.map((p) => {
         if (p[1].length === 0) {
           return '';
         }
-        return `${p[1].map((pp) => `"${pp}"`).join(' or ')} instead of "${p[0]}"`;
+        return `${p[1].map((pp: string) => `"${pp}"`).join(' or ')} instead of "${p[0]}"`;
       }).filter((sugg) => sugg !== '');
       if (suggestions.length) {
         warning += `Did you mean ${suggestions.slice(0, -1).join(', ')}`;
@@ -250,7 +260,7 @@ export function validateTestSpecification(specification) {
       const [property, suggestions] = unknownProperties[0];
       warning += `property "${property}".`;
       if (suggestions.length) {
-        warning += ` Did you mean ${suggestions.map((s) => `"${s}"`).join(' or ')}?`;
+        warning += ` Did you mean ${suggestions.map((s: string) => `"${s}"`).join(' or ')}?`;
       }
     }
     errorMessages.push(warning);

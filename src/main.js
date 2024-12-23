@@ -7,7 +7,7 @@ import { walk } from 'jsr:@std/fs/walk';
 import * as Diff from 'diff';
 
 import { Bibliographer } from './bibliographer.js';
-import { validateTestSpecification, parseInput } from './specification.js';
+import { validateTestSpecification, parseInput } from './specification.ts';
 import metadata from '../deno.json' with { type: 'json' };
 
 function diffWithColors(expected, actual) {
