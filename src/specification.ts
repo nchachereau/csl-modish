@@ -1,4 +1,4 @@
-import { Ajv2020, DefinedError } from 'ajv/dist/2020.js';
+import { Ajv2020, type DefinedError } from 'ajv/dist/2020.js';
 import schema from './modish.schema.json' with { type: 'json' };
 import { suggestSimilar } from './suggestSimilar.ts';
 
@@ -49,9 +49,9 @@ const LOCATORS: Record<string, string> = {
 };
 
 export function parseInput(inputs: string[]) {
-    const parsedInputs: Object[][] = [];
+    const parsedInputs: object[][] = [];
     for (const rawInput of inputs) {
-        const parsedInput: Object[] = [];
+        const parsedInput: object[] = [];
         const items = rawInput.split(';');
         for (const item of items) {
             const parts = item.trim().split(' ').map((part: string) => part.trim());
@@ -85,14 +85,14 @@ function makeOrdinal(n: number): string {
   return n + 'th';
 }
 
-function getPropertyByPath(object: Record<string, any>, path: string, removeLast?: boolean): Record<string, any>;
-function getPropertyByPath(object: Array<any>, path: string, removeLast?: boolean): Array<any>;
-function getPropertyByPath(object: Record<string, any> | Array<any>, path: string, removeLast=true) {
+function getPropertyByPath(object: Record<string, unknown>, path: string, removeLast?: boolean): unknown;
+function getPropertyByPath(object: Array<unknown>, path: string, removeLast?: boolean): unknown;
+function getPropertyByPath(object: Record<string, unknown> | Array<unknown>, path: string, removeLast=true) {
   const keys = path.split('/').filter((e) => e != '#' && e != '');
   if (removeLast) {
     keys.pop();
   }
-  let _object = object;
+  let _object: unknown = object;
   for (const key of keys) {
     if (Array.isArray(_object)) {
       if (/[0-9]+/.test(key)) {
@@ -117,7 +117,7 @@ function pluralize(verbForm: string) {
   }
 }
 
-export function validateTestSpecification(specification: Object) {
+export function validateTestSpecification(specification: object) {
   const valid = validate(specification);
 
   if (valid) {
