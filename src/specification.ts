@@ -2,7 +2,7 @@ import { Ajv2020, type DefinedError } from 'ajv/dist/2020.js';
 import schema from './modish.schema.json' with { type: 'json' };
 import { suggestSimilar } from './suggestSimilar.ts';
 
-type CiteItem = {
+interface CiteItem {
   id: string,
   locator?: string,
   label?: string
@@ -72,9 +72,6 @@ export function parseInput(inputs: string[]) {
     return parsedInputs;
 }
 
-const ajv = new Ajv2020({allErrors: true});
-const validate = ajv.compile(schema);
-
 function makeOrdinal(n: number): string {
   // we assume that n < 111
   const endings: Record<number, string> = { 1: 'st', 2: 'nd', 3: 'rd' };
@@ -94,12 +91,8 @@ function getPropertyByPath(object: Record<string, unknown> | Array<unknown>, pat
   }
   let _object: unknown = object;
   for (const key of keys) {
-    if (Array.isArray(_object)) {
-      if (/[0-9]+/.test(key)) {
-        _object = _object.at(Number(key));
-      }
-    } else {
-      _object = _object[key];
+    if (_object && typeof _object == 'object') {
+      _object = _object[key as keyof typeof _object];
     }
   }
   return _object;
@@ -116,6 +109,9 @@ function pluralize(verbForm: string) {
     return verbForm;
   }
 }
+
+const ajv = new Ajv2020({allErrors: true});
+const validate = ajv.compile(schema);
 
 export function validateTestSpecification(specification: object) {
   const valid = validate(specification);
@@ -159,9 +155,9 @@ export function validateTestSpecification(specification: object) {
         errorDescription = (item !== -1) ? 'must be strings' : 'must be a string';
         advice = 'Did you forget to add quotation marks?';
       } else if (error.params.type == 'object') {
-        // gather expected properties
-        const _schema = getPropertyByPath(schema, error.schemaPath);
-        const properties = Object.keys(_schema['properties']);
+        // gather properties of expected object
+        const objectSchema = getPropertyByPath(schema, error.schemaPath) as object;
+        const properties = Object.keys(objectSchema['properties' as keyof typeof objectSchema]);
         let propertiesStr: string;
         if (properties.length < 3) {
           propertiesStr = properties.map((p) => `"${p}"`).join(' and ');
@@ -173,8 +169,7 @@ export function validateTestSpecification(specification: object) {
         verb = 'does';
         // give advice when array instead of object
         if (
-          Array.isArray(getPropertyByPath(specification, error.instancePath, false)) &&
-            _schema['type'] != 'array'
+          Array.isArray(getPropertyByPath(specification, error.instancePath, false))
         ) {
           if (item !== -1) {
             advice = 'It seems the';
@@ -213,7 +208,8 @@ export function validateTestSpecification(specification: object) {
         // "all entries in "citations" must be strings"
         // "all entries in "tests" should define properties such as…"
         let err = `all entries in "${property}"${level} ${errorDescription}, `;
-        if (items.length == getPropertyByPath(specification, error.instancePath).length) {
+        const arr = getPropertyByPath(specification, error.instancePath) as object[] | string[];
+        if (items.length == arr.length) {
           err += `but none ${pluralize(verb)}. ${advice}`;
         } else {
           err += `but the ${itemsStr} ${verb} not. ${advice}`;
@@ -231,7 +227,7 @@ export function validateTestSpecification(specification: object) {
     } else if (error.keyword == 'additionalProperties') {
       const similar = suggestSimilar(
         error.params.additionalProperty,
-        Object.keys(getPropertyByPath(schema, error.schemaPath)['properties'])
+        Object.keys(schema['properties'])
       )
       unknownProperties.push([
         error.params.additionalProperty,
