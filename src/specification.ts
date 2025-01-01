@@ -1,12 +1,7 @@
 import { Ajv2020, type DefinedError } from 'ajv/dist/2020.js';
 import schema from './modish.schema.json' with { type: 'json' };
 import { suggestSimilar } from './suggestSimilar.ts';
-
-interface CiteItem {
-  id: string,
-  locator?: string,
-  label?: string
-};
+import type { CiteItem } from './bibliographer.ts';
 
 const LOCATORS: Record<string, string> = {
     'bk.': 'book',

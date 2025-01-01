@@ -1,8 +1,25 @@
+import type * as CSL from './csl.d.ts';
+// @ts-types="./citeproc.d.ts"
 import citeproc from 'citeproc';
 import * as path from "jsr:@std/path";
 
+export interface CiteItem {
+  id: string,
+  locator?: string,
+  label?: string
+};
+
+export class NoStyleLoadedError extends Error {
+    constructor() {
+        const message = "Call loadStyle() first."
+        super(message);
+    }
+}
+
 export class UnregisteredItemError extends Error {
-    constructor(itemIdentifier) {
+    erroneousIdentifier: string;
+
+    constructor(itemIdentifier: string) {
         const message = `Item ${itemIdentifier} not registered. Pass it to registerItems() first.`;
         super(message);
         this.name = "UnregisteredItemError";
@@ -11,16 +28,20 @@ export class UnregisteredItemError extends Error {
 }
 
 export class Bibliographer {
+    items: Record<string, CSL.Data>;
+    citations: [number, string, string][];
+    processor: citeproc.Engine | undefined;
+
     constructor() {
         this.items = {};
         this.citations = [];
     }
 
-    loadStyle(stylePath, lang='en') {
-        const sys = {
-            retrieveLocale: (l) => {
+    loadStyle(stylePath: string, lang='en') {
+        const sys: citeproc.Sys = {
+            retrieveLocale: (l: string) => {
                 const localeFilePath = path.join(
-                    import.meta.dirname,
+                    import.meta.dirname as string,
                     '..',
                     'locales',
                     `locales-${l}.xml`
@@ -33,20 +54,23 @@ export class Bibliographer {
         this.processor = new citeproc.Engine(sys, style, lang);
     }
 
-    registerItems(references) {
+    registerItems(references: CSL.Data[]) {
         for (const ref of references) {
             this.items[ref['id']] = ref;
         }
     }
 
-    cite(items) {
+    cite(items: CiteItem[]) {
+        if (this.processor === undefined) {
+            throw new NoStyleLoadedError();
+        }
         const noteIndex = this.citations.length+1;
         for (const item of items) {
             if (!(item.id in this.items)) {
                 throw new UnregisteredItemError(item.id);
             }
         }
-        const citation = {
+        const citation: citeproc.Citation = {
             citationItems: items,
             properties: { noteIndex: noteIndex }
         };
@@ -66,8 +90,17 @@ export class Bibliographer {
     }
 
     getBibliography() {
-        const [_params, entries] = this.processor.makeBibliography();
+        if (this.processor === undefined) {
+            throw new NoStyleLoadedError();
+        }
+
+        const bibliography = this.processor.makeBibliography();
+        if (bibliography === false) {
+            // makeBibliography returns false if the citation style does not support bibliographies
+            return [];
+        }
+        const [_params, entries] = bibliography;
         const pattern = /<div class="csl-entry">(.+)<\/div>/;
-        return entries.map((entry) => entry.trim().replace(pattern, '$1'));
+        return entries.map((entry: string) => entry.trim().replace(pattern, '$1'));
     }
 }

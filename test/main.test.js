@@ -3,7 +3,7 @@ import { assertSpyCall, assertSpyCalls, returnsNext, stub, spy } from "jsr:@std/
 import { expect } from 'npm:chai@5';
 
 import { test } from '../src/main.js';
-import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.js';
+import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.ts';
 
 describe('function test()', () => {
 

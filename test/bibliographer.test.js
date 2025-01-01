@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from "jsr:@std/testing/bdd";
 import { expect } from 'npm:chai@5';
 import * as path from "jsr:@std/path";
 
-import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.js';
+import { Bibliographer, UnregisteredItemError, NoStyleLoadedError } from '../src/bibliographer.ts';
 
 const style = path.join(import.meta.dirname, 'minimal.csl');
 
@@ -85,4 +85,13 @@ describe('Bibliographer', () => {
         ]);
     });
 
+    it('throws an error when style has not been loaded', () => {
+        bibliographer = new Bibliographer();
+        bibliographer.registerItems(items);
+        expect(() => bibliographer.cite([{ id: 'Book1' }])).to.throw(NoStyleLoadedError);
+
+        bibliographer = new Bibliographer();
+        bibliographer.registerItems(items);
+        expect(() => bibliographer.getBibliography()).to.throw(NoStyleLoadedError);
+    });
 });
