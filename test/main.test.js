@@ -1,6 +1,6 @@
 import { describe, it } from "jsr:@std/testing/bdd";
 import { assertSpyCall, assertSpyCalls, returnsNext, stub, spy } from "jsr:@std/testing/mock";
-import { expect } from 'npm:chai@5';
+import { expect } from "jsr:@std/expect";
 
 import { test } from '../src/main.ts';
 import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.ts';
@@ -54,9 +54,9 @@ describe('function test()', () => {
             getCitationsStub.restore();
         }
 
-        expect(passed).to.be.true;
-        expect(failures).to.be.empty;
-        expect(counts.citations).to.eql([2, 0]);
+        expect(passed).toBe(true);
+        expect(failures).toHaveLength(0);
+        expect(counts.citations).toMatchObject([2, 0]);
         assertSpyCall(citeStub, 0, { args: [ [ { id: 'Book1' } ] ]});
         assertSpyCall(citeStub, 1, { args: [ [ { id: 'Book2' } ] ]});
         assertSpyCalls(citeStub, 2);
@@ -84,10 +84,10 @@ describe('function test()', () => {
             citeStub.restore();
             getCitationsStub.restore();
         }
-        expect(passed).to.be.false;
-        expect(counts.citations).to.eql([1, 1]);
-        expect(failures).to.have.lengthOf(1);
-        expect(failures[0]).to.eql({type: 'citation', expected: 'Smith 2015.', actual: 'Doe 1995.'});
+        expect(passed).toBe(false);
+        expect(counts.citations).toMatchObject([1, 1]);
+        expect(failures).toHaveLength(1);
+        expect(failures[0]).toMatchObject({type: 'citation', expected: 'Smith 2015.', actual: 'Doe 1995.'});
     });
 
     it('reports that the bibliography matches the expected output', () => {
@@ -115,9 +115,9 @@ describe('function test()', () => {
             getCitationsStub.restore();
             getBibliographyStub.restore();
         }
-        expect(passed).to.be.true;
-        expect(counts.bibliography).to.eql([1, 0]);
-        expect(failures).to.be.empty;
+        expect(passed).toBe(true);
+        expect(counts.bibliography).toMatchObject([1, 0]);
+        expect(failures).toHaveLength(0);
     });
 
     it('reports bibliography not matching expected output', () => {
@@ -145,10 +145,10 @@ describe('function test()', () => {
             getCitationsStub.restore();
             getBibliographyStub.restore();
         }
-        expect(passed).to.be.false;
-        expect(counts.bibliography).to.eql([0, 1]);
-        expect(failures).to.have.lengthOf(1);
-        expect(failures[0]).to.eql({
+        expect(passed).toBe(false);
+        expect(counts.bibliography).toMatchObject([0, 1]);
+        expect(failures).toHaveLength(1);
+        expect(failures[0]).toMatchObject({
             type: 'bibliography',
             expected: '- Jane Doe, Book2, 1990.\n- John Smith, Book1, 2024.',
             actual: '- Wrong Name, Other Book, 1990.\n- John Smith, Book1, 2024.'
@@ -160,9 +160,9 @@ describe('function test()', () => {
 
         const [passed, _counts, failures] = test({style: 'style.csl', citations: citations}, []);
 
-        expect(passed).to.be.false;
-        expect(failures[0].type).to.equal('error');
-        expect(failures[0].error).to.match(/\binput\b/);
+        expect(passed).toBe(false);
+        expect(failures[0].type).toEqual('error');
+        expect(failures[0].error).toMatch(/\binput\b/);
     });
 
     it('reports failure if neither citation nor bibliography are specified', () => {
@@ -185,8 +185,8 @@ describe('function test()', () => {
             getCitationsStub.restore();
             getBibliographyStub.restore();
         }
-        expect(passed).to.be.false;
-        expect(failures[0]).to.eql({
+        expect(passed).toBe(false);
+        expect(failures[0]).toMatchObject({
             type: 'error',
             error: 'Please specify expected output (citations and/or bibliography) in your test(s).'
         });
@@ -232,8 +232,8 @@ describe('function test()', () => {
         } finally {
             citeStub.restore();
         }
-        expect(passed).to.be.false;
-        expect(failures[0]).to.have.property('error');
+        expect(passed).toBe(false);
+        expect(failures[0]).toHaveProperty('error');
         assertSpyCalls(citeStub, 0);
     });
 
@@ -255,9 +255,9 @@ describe('function test()', () => {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
         }
-        expect(passed).to.be.false;
-        expect(failures[0]).to.have.property('error');
-        expect(failures[0].error).to.have.string(input[0]);
+        expect(passed).toBe(false);
+        expect(failures[0]).toHaveProperty('error');
+        expect(failures[0].error).toEqual(expect.stringContaining(input[0]));
     });
 
     it('supports series of tests', () => {
@@ -284,9 +284,9 @@ describe('function test()', () => {
             citeStub.restore();
             getCitationsStub.restore();
         }
-        expect(passed).to.be.false;
-        expect(failures).to.have.lengthOf(1);
-        expect(failures[0]).to.eql({type: 'citation', expected: 'Smith 2015.', actual: 'Doe 1995.'});
+        expect(passed).toBe(false);
+        expect(failures).toHaveLength(1);
+        expect(failures[0]).toMatchObject({type: 'citation', expected: 'Smith 2015.', actual: 'Doe 1995.'});
         assertSpyCall(citeStub, 0, {args: [[{id: 'Book1'}]]});
         assertSpyCall(citeStub, 1, {args: [[{id: 'Book2'}]]});
     });
@@ -309,8 +309,8 @@ describe('function test()', () => {
             citeStub.restore();
             getCitationsStub.restore();
         }
-        expect(passed).to.be.true;
-        expect(failures).to.be.empty;
+        expect(passed).toBe(true);
+        expect(failures).toHaveLength(0);
         assertSpyCall(bibliographerLoadStyleStub, 0, {args: [styleName, undefined]});
     });
 
@@ -339,8 +339,8 @@ describe('function test()', () => {
             citeStub.restore();
             getCitationsStub.restore();
         }
-        expect(passed).to.be.true;
-        expect(failures).to.be.empty;
+        expect(passed).toBe(true);
+        expect(failures).toHaveLength(0);
         assertSpyCall(citeStub, 0, {args: [ [ { id: 'Book1' } ] ]});
         assertSpyCall(citeStub, 1, {args: [ [ { id: 'Book2' } ] ]});
     });
@@ -373,8 +373,8 @@ describe('function test()', () => {
             getCitationsStub.restore();
             getBibliographyStub.restore();
         }
-        expect(passed).to.be.true;
-        expect(failures).to.be.empty;
+        expect(passed).toBe(true);
+        expect(failures).toHaveLength(0);
     });
 
 });
