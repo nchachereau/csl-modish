@@ -155,6 +155,16 @@ describe('function test()', () => {
         });
     });
 
+    it('reports failure if no inputs are specified', () => {
+        const citations = ['Smith 2024.', 'Doe 1990.'];
+
+        const [passed, _counts, failures] = test({style: 'style.csl', citations: citations}, []);
+
+        expect(passed).to.be.false;
+        expect(failures[0].type).to.equal('error');
+        expect(failures[0].error).to.match(/\binput\b/);
+    });
+
     it('reports failure if neither citation nor bibliography are specified', () => {
         const input = [ 'Book1', 'Book2' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));

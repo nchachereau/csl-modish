@@ -61,7 +61,15 @@ export function test(specification: TestSpecification, items: CSL.Data[]): TestR
     const failures: Failure[] = [];
     for (const testCase of tests) {
         // if the test case does not specify the input, use the global definition
-        const inputs = parseInput(testCase.input ?? specification.input);
+        const rawInputs = testCase.input ?? specification.input;
+        if (rawInputs === undefined) {
+            failures.push({
+                type: 'error',
+                error: 'Please specify `input`, the list of references to be formatted.'
+            });
+            continue;
+        }
+        const inputs = parseInput(rawInputs);
         const bibliographer = new Bibliographer();
         // if the test case does not specify the style, use the globally defined style
         const style = testCase.style ?? specification.style;
