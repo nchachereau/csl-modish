@@ -5,8 +5,8 @@
     "exports": "./src/main.ts",
     "imports": {
         "citeproc": "npm:citeproc@2",
-        "commander": "npm:commander@12",
-        "diff": "npm:diff@6",
+        "commander": "npm:commander@^13",
+        "diff": "npm:diff@^7",
         "ajv": "npm:ajv@8"
     }
 }

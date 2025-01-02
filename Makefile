@@ -1,4 +1,4 @@
-CMD := deno compile --allow-read --include locales/
+CMD := deno compile --allow-read --allow-env="NO_COLOR,FORCE_COLOR,CLICOLOR_FORCE" --include locales/
 MAIN := src/main.js
 SOURCES := $(shell find src/ -type f -name '*.js')
 
