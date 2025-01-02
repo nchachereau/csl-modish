@@ -3,7 +3,7 @@
 // Definitions originally by: Derek P Sifford <https://github.com/dsifford>
 // File modified for <https://github.com/nchachereau/csl-modish>
 
-import * as CSL from './csl.ts';
+import type * as CSL from './csl.ts';
 
 /**
  * 0: `Bibmeta`

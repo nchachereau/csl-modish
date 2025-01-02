@@ -1,4 +1,4 @@
-import * as CSL from './csl.ts';
+import type * as CSL from './csl.ts';
 // @ts-types="./citeproc.d.ts"
 import citeproc from 'citeproc';
 import * as path from "jsr:@std/path";
