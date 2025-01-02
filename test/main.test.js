@@ -2,7 +2,7 @@ import { describe, it } from "jsr:@std/testing/bdd";
 import { assertSpyCall, assertSpyCalls, returnsNext, stub, spy } from "jsr:@std/testing/mock";
 import { expect } from 'npm:chai@5';
 
-import { test } from '../src/main.js';
+import { test } from '../src/main.ts';
 import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.ts';
 
 describe('function test()', () => {

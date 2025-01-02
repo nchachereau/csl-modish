@@ -3,6 +3,18 @@ import schema from './modish.schema.json' with { type: 'json' };
 import { suggestSimilar } from './suggestSimilar.ts';
 import type { CiteItem } from './bibliographer.ts';
 
+interface SingleTestSpecification {
+  style?: string;
+  lang?: string;
+  input?: string[];
+  citations?: string[];
+  bibliography?: string[];
+};
+
+export interface TestSpecification extends SingleTestSpecification {
+  tests?: SingleTestSpecification[];
+}
+
 const LOCATORS: Record<string, string> = {
     'bk.': 'book',
     'bks.': 'book',
@@ -43,28 +55,29 @@ const LOCATORS: Record<string, string> = {
     'vols.': 'volume',
 };
 
-export function parseInput(inputs: string[]) {
-    const parsedInputs: object[][] = [];
-    for (const rawInput of inputs) {
-        const parsedInput: object[] = [];
-        const items = rawInput.split(';');
-        for (const item of items) {
-            const parts = item.trim().split(' ').map((part: string) => part.trim());
-            const citationItem: CiteItem = { 'id': parts[0] };
-            if (parts.length > 1) {
-                if (parts[1] in LOCATORS) {
-                    citationItem.label = LOCATORS[parts[1]];
-                    citationItem.locator = parts[2];
-                } else if (Object.values(LOCATORS).includes(parts[1])) {
-                    citationItem.label = parts[1];
-                    citationItem.locator = parts[2];
-                }
-            }
-            parsedInput.push(citationItem);
+export function parseInput(inputs: string[]=[]) {
+  const parsedInputs: CiteItem[][] = [];
+
+  for (const rawInput of inputs) {
+    const parsedInput: CiteItem[] = [];
+    const items = rawInput.split(';');
+    for (const item of items) {
+      const parts = item.trim().split(' ').map((part: string) => part.trim());
+      const citationItem: CiteItem = { 'id': parts[0] };
+      if (parts.length > 1) {
+        if (parts[1] in LOCATORS) {
+          citationItem.label = LOCATORS[parts[1]];
+          citationItem.locator = parts[2];
+        } else if (Object.values(LOCATORS).includes(parts[1])) {
+          citationItem.label = parts[1];
+          citationItem.locator = parts[2];
         }
-        parsedInputs.push(parsedInput);
+      }
+      parsedInput.push(citationItem);
     }
-    return parsedInputs;
+    parsedInputs.push(parsedInput);
+  }
+  return parsedInputs;
 }
 
 function makeOrdinal(n: number): string {
@@ -108,7 +121,7 @@ function pluralize(verbForm: string) {
 const ajv = new Ajv2020({allErrors: true});
 const validate = ajv.compile(schema);
 
-export function validateTestSpecification(specification: object) {
+export function validateTestSpecification(specification: object): [boolean, string[]] {
   const valid = validate(specification);
 
   if (valid) {

@@ -6,11 +6,13 @@ import * as yaml from 'jsr:@std/yaml';
 import { walk } from 'jsr:@std/fs/walk';
 import * as Diff from 'diff';
 
-import { Bibliographer } from './bibliographer.ts';
-import { validateTestSpecification, parseInput } from './specification.ts';
+import type * as CSL from './csl.d.ts';
+
+import { Bibliographer, UnregisteredItemError } from './bibliographer.ts';
+import { validateTestSpecification, parseInput, type TestSpecification } from './specification.ts';
 import metadata from '../deno.json' with { type: 'json' };
 
-function diffWithColors(expected, actual) {
+function diffWithColors(expected: string, actual: string) {
     const difference = Diff.diffChars(expected, actual);
     let coloredExpected = '';
     let coloredActual = '';
@@ -27,13 +29,36 @@ function diffWithColors(expected, actual) {
     return [coloredExpected, coloredActual];
 }
 
-export function test(specification, items) {
+interface ErrorFailure {
+    type: 'error';
+    error: string;
+}
+interface CitationFailure {
+    type: 'citation';
+    actual: string;
+    expected: string;
+}
+interface BibliographyFailure {
+    type: 'bibliography';
+    actual: string;
+    expected: string;
+}
+type Failure = ErrorFailure | CitationFailure | BibliographyFailure;
+
+interface TestResults {
+    citations: [passed: number, failed: number];
+    bibliography: [passed: number, failed: number];
+}
+
+type TestResultSummary = [boolean, TestResults, Failure[]];
+
+export function test(specification: TestSpecification, items: CSL.Data[]): TestResultSummary {
     // if `tests` is not specified, assume that there is only one global test
     const tests = specification.tests ?? [specification];
 
     let passed = false;
-    const counts = { citations: [0, 0], bibliography: [0, 0] };
-    const failures = [];
+    const counts: TestResults = { citations: [0, 0], bibliography: [0, 0] };
+    const failures: Failure[] = [];
     for (const testCase of tests) {
         // if the test case does not specify the input, use the global definition
         const inputs = parseInput(testCase.input ?? specification.input);
@@ -47,8 +72,8 @@ export function test(specification, items) {
         }
         try {
             bibliographer.loadStyle(style, lang);
-        } catch(err) {
-            if (err.code == 'ENOENT') {
+        } catch (err) {
+            if (err instanceof Error && err.name == 'NotFound') {
                 failures.push({
                     type: 'error',
                     error: err.message
@@ -60,7 +85,10 @@ export function test(specification, items) {
         }
         bibliographer.registerItems(items);
 
-        if (!('citations' in testCase || 'bibliography' in testCase)) {
+        const expectedCitations = testCase.citations;
+        const expectedBiblio = testCase.bibliography;
+
+        if (expectedCitations === undefined && expectedBiblio === undefined) {
             failures.push({
                 type: 'error',
                 error:
@@ -73,7 +101,7 @@ export function test(specification, items) {
             try {
                 bibliographer.cite(input);
             } catch(err) {
-                if (err.name == 'UnregisteredItemError') {
+                if (err instanceof UnregisteredItemError) {
                     failures.push({
                         type: 'error',
                         error: `No reference ${err.erroneousIdentifier} could be found in references.json.`
@@ -83,9 +111,8 @@ export function test(specification, items) {
                 }
             }
         }
-        if ('citations' in testCase) {
+        if (expectedCitations) {
             const outputCitations = bibliographer.getCitations();
-            const expectedCitations = testCase.citations;
             const unmatchedCitations = [];
             for (const [i, outputCitation] of outputCitations.entries()) {
                 const expected = expectedCitations[i];
@@ -107,9 +134,8 @@ export function test(specification, items) {
                 });
             }
         }
-        if ('bibliography' in testCase) {
+        if (expectedBiblio) {
             const outputBibliography = bibliographer.getBibliography();
-            const expectedBiblio = testCase.bibliography;
             if (expectedBiblio.length !== outputBibliography.length ||
                 !(outputBibliography.every((val, i) => val === expectedBiblio[i]))) {
                 counts.bibliography[1]++;
@@ -125,21 +151,21 @@ export function test(specification, items) {
     return [passed, counts, failures];
 }
 
-async function testCommand(testFile, options) {
-    let testFiles = [];
+async function testCommand(testFile: string, options={bail: false, quiet: false, verbose: false}) {
+    let testFiles: string[] = [];
     if (testFile) {
         testFiles = [testFile];
     } else {
-        testFiles = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
-        testFiles = testFiles.map((f) => f.path);
+        const files = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
+        testFiles = files.map((f) => f.path);
         testFiles.sort();
     }
     const referenceFile = 'tests/references.json';
-    let references;
+    let references: CSL.Data[];
     try {
         references = JSON.parse(await Deno.readTextFile(referenceFile));
     } catch(err) {
-        if (err.code == 'ENOENT') {
+        if (err instanceof Error && err.name == 'NotFound') {
             console.error(
                 `No CSL-JSON reference file '${referenceFile}. Create one, for instance by\n` +
                 'exporting it from your reference management software (e.g. Zotero).');
@@ -169,9 +195,12 @@ async function testCommand(testFile, options) {
             spinner.start();
         }
 
-        let spec;
+        let spec: unknown;
         try {
             spec = yaml.parse(await Deno.readTextFile(testFile), {schema: 'failsafe'});
+            if (spec === null || typeof spec != 'object') {
+                throw new SyntaxError();
+            }
             const [valid, errors] = validateTestSpecification(spec);
             if (!valid) {
                 for (const err of errors) {
@@ -183,10 +212,10 @@ async function testCommand(testFile, options) {
                 Deno.exit(3);
             }
         } catch(err) {
-            if (err.code == 'ENOENT') {
+            if (err instanceof Error && err.name == 'NotFound') {
                 console.error(`No such test file ${testFile}`);
                 Deno.exit(3);
-            } else if (err.name == 'SyntaxError' || err.name == 'YAMLError') {
+            } else if (err instanceof SyntaxError) {
                 console.error(
                     colors.bold(`Error encountered when loading file ${testFile}. Check that the\n` +
                                 'contents follow the guidelines for test files.\n\n') +
