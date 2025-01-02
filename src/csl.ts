@@ -1,17 +1,7 @@
 // Type definitions for the CSL JSON Schema
 // Project: https://github.com/citation-style-language/schema
-// Definitions by: Derek P Sifford <https://github.com/dsifford>
-
-export namespace CSL {
-    type ItemType = IItemType;
-    type DateFieldKey = IDateFieldKey;
-    type PersonFieldKey = IPersonFieldKey;
-    type NumberFieldKey = INumberFieldKey;
-    type StringFieldKey = IStringFieldKey;
-    type Date = IDate;
-    type Person = IPerson;
-    type Data = IData;
-}
+// Definitions originally by: Derek P Sifford <https://github.com/dsifford>
+// File modified for <https://github.com/nchachereau/csl-modish>
 
 export type ItemType =
     | 'article'
