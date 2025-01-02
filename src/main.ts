@@ -6,7 +6,7 @@ import * as yaml from 'jsr:@std/yaml';
 import { walk } from 'jsr:@std/fs/walk';
 import * as Diff from 'diff';
 
-import type * as CSL from './csl.d.ts';
+import type { CSL } from './csl.d.ts';
 
 import { Bibliographer, UnregisteredItemError } from './bibliographer.ts';
 import { validateTestSpecification, parseInput, type TestSpecification } from './specification.ts';

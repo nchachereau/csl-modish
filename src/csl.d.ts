@@ -2,17 +2,15 @@
 // Project: https://github.com/citation-style-language/schema
 // Definitions by: Derek P Sifford <https://github.com/dsifford>
 
-declare global {
-    namespace CSL {
-        type ItemType = IItemType;
-        type DateFieldKey = IDateFieldKey;
-        type PersonFieldKey = IPersonFieldKey;
-        type NumberFieldKey = INumberFieldKey;
-        type StringFieldKey = IStringFieldKey;
-        type Date = IDate;
-        type Person = IPerson;
-        type Data = IData;
-    }
+export namespace CSL {
+    type ItemType = IItemType;
+    type DateFieldKey = IDateFieldKey;
+    type PersonFieldKey = IPersonFieldKey;
+    type NumberFieldKey = INumberFieldKey;
+    type StringFieldKey = IStringFieldKey;
+    type Date = IDate;
+    type Person = IPerson;
+    type Data = IData;
 }
 
 export type ItemType =
