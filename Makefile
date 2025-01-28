@@ -1,6 +1,6 @@
 CMD := deno compile --allow-read --allow-env="NO_COLOR,FORCE_COLOR,CLICOLOR_FORCE" --include locales/
-MAIN := src/main.js
-SOURCES := $(shell find src/ -type f -name '*.js')
+MAIN := src/main.ts
+SOURCES := $(shell find src/ -type f -name '*.ts')
 
 DIST_DIR := dist
 APP_NAME := modish
