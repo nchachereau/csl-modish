@@ -159,11 +159,8 @@ export function test(specification: TestSpecification, items: CSL.Data[]): TestR
     return [passed, counts, failures];
 }
 
-async function testCommand(testFile: string, options={bail: false, quiet: false, verbose: false}) {
-    let testFiles: string[] = [];
-    if (testFile) {
-        testFiles = [testFile];
-    } else {
+async function testCommand(testFiles: string[], options={bail: false, quiet: false, verbose: false}) {
+    if (testFiles.length == 0) {
         const files = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
         testFiles = files.map((f) => f.path);
         testFiles.sort();
@@ -304,7 +301,7 @@ if (import.meta.main) {
         .option('-b, --bail', 'abort after first test failure')
         .option('-q, --quiet', 'suppress all normal output')
         .option('--verbose', 'output status for each file')
-        .argument('[test-file]')
+        .argument('[test-files...]')
         .action(testCommand);
 
     program.parse();
