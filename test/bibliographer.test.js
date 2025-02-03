@@ -58,7 +58,13 @@ describe('Bibliographer', () => {
     it('formats a citation with a locator', () => {
         bibliographer.cite([{ id: 'Book1', label: 'page', locator: '102-103' }]);
         const citations = bibliographer.getCitations();
-        expect(citations[0]).toEqual('Smith 2024 102–103.');
+        expect(citations[0]).toEqual('Smith 2024 pp. 102–103.');
+    });
+
+    it('formats a citation with an unknown locator', () => {
+        bibliographer.cite([{ id: 'Book1', label: 'gibberish', locator: '2' }]);
+        const citations = bibliographer.getCitations();
+        expect(citations[0]).toEqual('Smith 2024 2.');
     });
 
     it('throws an error when item does not exist', () => {

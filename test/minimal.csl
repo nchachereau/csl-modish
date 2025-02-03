@@ -15,7 +15,10 @@
           <group delimiter=" ">
             <names variable="author"><name form="short"/></names>
             <date variable="issued" form="numeric" date-parts="year"/>
-            <text variable="locator"/>
+            <group delimiter=" ">
+              <label variable="locator" form="short"/>
+              <text variable="locator"/>
+            </group>
           </group>
         </else>
       </choose>
@@ -34,6 +37,7 @@
           </else>
         </choose>
         <date variable="issued" form="numeric" date-parts="year"/>
+      </group>
     </layout>
   </bibliography>
 </style>
