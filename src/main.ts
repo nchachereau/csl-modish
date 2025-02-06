@@ -61,8 +61,8 @@ export function test(specification: TestSpecification, items: CSL.Data[]): TestR
     const failures: Failure[] = [];
     for (const testCase of tests) {
         // if the test case does not specify the input, use the global definition
-        const rawInputs = testCase.input ?? specification.input;
-        if (rawInputs === undefined) {
+        const inputs = testCase.input ?? specification.input;
+        if (inputs === undefined) {
             failures.push({
                 type: 'error',
                 error: 'Please specify `input`, the list of references to be formatted.'
@@ -104,10 +104,9 @@ export function test(specification: TestSpecification, items: CSL.Data[]): TestR
             continue;
         }
 
-        for (const rawInput of rawInputs) {
+        for (const input of inputs) {
             try {
-                const input = bibliographer.parseInput(rawInput);
-                bibliographer.cite(input);
+                bibliographer.addCitation(input);
             } catch(err) {
                 if (err instanceof UnregisteredItemError) {
                     failures.push({

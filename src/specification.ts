@@ -1,7 +1,6 @@
 import { Ajv2020, type DefinedError } from 'ajv/dist/2020.js';
 import schema from './modish.schema.json' with { type: 'json' };
 import { suggestSimilar } from './suggestSimilar.ts';
-import type { CiteItem } from './bibliographer.ts';
 
 interface SingleTestSpecification {
   style?: string;

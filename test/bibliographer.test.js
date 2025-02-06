@@ -39,8 +39,8 @@ describe('Bibliographer', () => {
     });
 
     it('returns formatted citations', () => {
-        bibliographer.cite([{ id: 'Book1' }, { id: 'Article1' } ]);
-        bibliographer.cite([{ id: 'Book2' } ]);
+        bibliographer._addCitation([{ id: 'Book1' }, { id: 'Article1' } ]);
+        bibliographer._addCitation([{ id: 'Book2' } ]);
         const citations = bibliographer.getCitations();
         expect(citations).toMatchObject([
             'Smith 2024a; Doe 1990.',
@@ -49,40 +49,40 @@ describe('Bibliographer', () => {
     });
 
     it('formats subsequent citations', () => {
-        bibliographer.cite([{ id: 'Book1' }]);
-        bibliographer.cite([{ id: 'Book1' } ]);
+        bibliographer._addCitation([{ id: 'Book1' }]);
+        bibliographer._addCitation([{ id: 'Book1' } ]);
         const citations = bibliographer.getCitations();
         expect(citations[1]).toEqual('ibid.');
     });
 
     it('formats a citation with a locator', () => {
-        bibliographer.cite([{ id: 'Book1', label: 'page', locator: '102-103' }]);
+        bibliographer._addCitation([{ id: 'Book1', label: 'page', locator: '102-103' }]);
         const citations = bibliographer.getCitations();
         expect(citations[0]).toEqual('Smith 2024 pp. 102–103.');
     });
 
     it('formats a citation with an unknown locator', () => {
-        bibliographer.cite([{ id: 'Book1', label: 'gibberish', locator: '2' }]);
+        bibliographer._addCitation([{ id: 'Book1', label: 'gibberish', locator: '2' }]);
         const citations = bibliographer.getCitations();
         expect(citations[0]).toEqual('Smith 2024 2.');
     });
 
     it('throws an error when item does not exist', () => {
-        expect(() => bibliographer.cite([{ id: 'NoSuchBook' }])).toThrow(UnregisteredItemError);
+        expect(() => bibliographer._addCitation([{ id: 'NoSuchBook' }])).toThrow(UnregisteredItemError);
     });
 
     it('supports defining the locale', () => {
         bibliographer = new Bibliographer();
         bibliographer.loadStyle(style, 'de-DE');
         bibliographer.registerItems(items);
-        bibliographer.cite([{ id: 'Book1' }]);
-        bibliographer.cite([{ id: 'Book1' }]);
+        bibliographer._addCitation([{ id: 'Book1' }]);
+        bibliographer._addCitation([{ id: 'Book1' }]);
         const citations = bibliographer.getCitations();
         expect(citations[1]).toEqual('ebd.');
     });
 
     it('formats a bibliography with cited items', () => {
-        bibliographer.cite([{ id: 'Book1' }, { id: 'Book2' }, { id: 'Article1' }]);
+        bibliographer._addCitation([{ id: 'Book1' }, { id: 'Book2' }, { id: 'Article1' }]);
         const bibliography = bibliographer.getBibliography();
         expect(bibliography).toMatchObject([
             'John Smith, <i>Book1</i>, 2024a.',
@@ -94,7 +94,7 @@ describe('Bibliographer', () => {
     it('throws an error when style has not been loaded', () => {
         bibliographer = new Bibliographer();
         bibliographer.registerItems(items);
-        expect(() => bibliographer.cite([{ id: 'Book1' }])).toThrow(NoStyleLoadedError);
+        expect(() => bibliographer._addCitation([{ id: 'Book1' }])).toThrow(NoStyleLoadedError);
 
         bibliographer = new Bibliographer();
         bibliographer.registerItems(items);

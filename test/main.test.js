@@ -36,7 +36,7 @@ describe('function test()', () => {
         const input = [ 'Book1', 'Book2' ];
         const citations = [ 'Smith 2024a.', 'Smith 2024b.' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             ['Smith 2024a.', 'Smith 2024b.']
         ]));
@@ -57,8 +57,8 @@ describe('function test()', () => {
         expect(passed).toBe(true);
         expect(failures).toHaveLength(0);
         expect(counts.citations).toMatchObject([2, 0]);
-        assertSpyCall(citeStub, 0, { args: [ [ { id: 'Book1' } ] ]});
-        assertSpyCall(citeStub, 1, { args: [ [ { id: 'Book2' } ] ]});
+        assertSpyCall(citeStub, 0, { args: [ 'Book1' ] });
+        assertSpyCall(citeStub, 1, { args: [ 'Book2' ] });
         assertSpyCalls(citeStub, 2);
         assertSpyCalls(getCitationsStub, 1);
     });
@@ -67,7 +67,7 @@ describe('function test()', () => {
         const input = [ 'Book1', 'Book2' ];
         const citations = [ 'Smith 2012.', 'Smith 2015.' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             ['Smith 2012.', 'Doe 1995.']
         ]));
@@ -94,7 +94,7 @@ describe('function test()', () => {
         const input = [ 'Book1', 'Book2' ];
         const bibliography = ['Jane Doe, Book2, 1990', 'John Smith, Book1, 2024.'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             ['Smith 2024.', 'Doe 1990.']
         ]));
@@ -124,7 +124,7 @@ describe('function test()', () => {
         const input = [ 'Book1', 'Book2' ];
         const bibliography = ['Jane Doe, Book2, 1990.', 'John Smith, Book1, 2024.'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             ['Smith 2024.', 'Doe 1990.']
         ]));
@@ -168,7 +168,7 @@ describe('function test()', () => {
     it('reports failure if neither citation nor bibliography are specified', () => {
         const input = [ 'Book1', 'Book2' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             ['Smith 2024.', 'Doe 1990.']
         ]));
@@ -219,7 +219,7 @@ describe('function test()', () => {
     });
 
     it('reports a failure when style file does not exist', () => {
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([]));
         let passed, _counts, failures;
         try {
             [passed, _counts, failures] = test(
@@ -240,7 +240,7 @@ describe('function test()', () => {
     it('reports a failure when identifier not found in references', () => {
         const input = ['Book1'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([new UnregisteredItemError(input[0])]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([new UnregisteredItemError(input[0])]));
 
         let passed, _counts, failures;
         try {
@@ -265,7 +265,7 @@ describe('function test()', () => {
         const globalInput = [ 'Wrong1' ];
         const citations = [ 'Smith 2012.', 'Smith 2015.' ];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             ['Smith 2012.', 'Doe 1995.']
         ]));
@@ -287,8 +287,8 @@ describe('function test()', () => {
         expect(passed).toBe(false);
         expect(failures).toHaveLength(1);
         expect(failures[0]).toMatchObject({type: 'citation', expected: 'Smith 2015.', actual: 'Doe 1995.'});
-        assertSpyCall(citeStub, 0, {args: [[{id: 'Book1'}]]});
-        assertSpyCall(citeStub, 1, {args: [[{id: 'Book2'}]]});
+        assertSpyCall(citeStub, 0, {args: [ 'Book1' ]});
+        assertSpyCall(citeStub, 1, {args: [ 'Book2' ]});
     });
 
     it('uses style defined in test case', () => {
@@ -296,7 +296,7 @@ describe('function test()', () => {
         const citations = [ 'Smith 2012.', 'Smith 2015.' ];
         const styleName = 'test.csl';
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             citations
         ]));
@@ -319,7 +319,7 @@ describe('function test()', () => {
         const citations = [ 'Smith 2012.', 'Smith 2015.' ];
         const styleName = 'test.csl';
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             citations
         ]));
@@ -341,8 +341,8 @@ describe('function test()', () => {
         }
         expect(passed).toBe(true);
         expect(failures).toHaveLength(0);
-        assertSpyCall(citeStub, 0, {args: [ [ { id: 'Book1' } ] ]});
-        assertSpyCall(citeStub, 1, {args: [ [ { id: 'Book2' } ] ]});
+        assertSpyCall(citeStub, 0, {args: [ 'Book1' ]});
+        assertSpyCall(citeStub, 1, {args: [ 'Book2' ]});
     });
 
     it('should not use global expected outputs if input is defined in test case', () => {
@@ -350,7 +350,7 @@ describe('function test()', () => {
         const citations = ['Smith 2024.', 'Doe 1990.'];
         const bibliography = ['Jane Doe, Book2, 1990.', 'John Smith, Book1, 2024.'];
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
-        const citeStub = stub(Bibliographer.prototype, 'cite', returnsNext([[], []]));
+        const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([[], []]));
         const getCitationsStub = stub(Bibliographer.prototype, 'getCitations', returnsNext([
             citations
         ]));

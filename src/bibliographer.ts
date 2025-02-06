@@ -3,7 +3,7 @@ import type * as CSL from './csl.ts';
 import citeproc from 'citeproc';
 import * as path from "jsr:@std/path";
 
-/** Items for {@linkcode cite}. */
+/** Objects passed to the citeproc citation engine. */
 export interface CiteItem {
     /** The `id` of the registered item to cite. */
     id: string,
@@ -70,8 +70,8 @@ export class UnregisteredItemError extends Error {
  * ];
  * bibliographer.registerItems(items);
  *
- * bibliographer.cite([{ id: 'Smith2024', label: 'page', locator: '102' }]);
- * bibliographer.cite([{ id: 'Smith2024', label: 'page', locator: '103' }]);
+ * bibliographer.addCitation("Marx1867 p. 102");
+ * bibliographer.addCitation("Marx1867 p. 103");
  * const citations = bibliographer.getCitations();
  * const bibliography = bibliographer.getBibliography();
  * ```
@@ -211,11 +211,17 @@ export class Bibliographer {
      * work with citations. It is sufficient, however, for the purpose of testing
      * CSL styles.
      *
-     * @param items Array of {@linkcode CiteItem}
+     * @param citation A string representing one or more citations, see {@linkcode parseInput}.
      * @throws {NoStyleLoadedError} Call {@linkcode loadStyle} before calling this function.
      * @throws {UnregisteredItemError} A cited item has not been registered by calling {@linkcode registerItems}.
      */
-    cite(items: CiteItem[]) {
+    addCitation(citation: string) {
+        const items = this.parseInput(citation);
+        this._addCitation(items);
+    }
+
+    /** @internal */
+    _addCitation(items: CiteItem[]) {
         if (this._processor === undefined) {
             throw new NoStyleLoadedError();
         }
@@ -243,7 +249,7 @@ export class Bibliographer {
     /**
      * Get array of formatted citations.
      *
-     * Formats the citations previously added by calling {@linkcode cite}
+     * Formats the citations previously added by calling {@linkcode addCitation}
      * and returns them, in the same order, as an array.
      *
      * @returns Formatted citations as an array of strings.
@@ -256,7 +262,7 @@ export class Bibliographer {
      * Get formatted bibliography of cited items.
      *
      * Formats a bibliography of all items previously cited by calling
-     * {@linkcode cite}.
+     * {@linkcode addCitation}.
      *
      * @throws {NoStyleLoadedError} Call {@linkcode loadStyle} before calling this function.
      * @returns Formatted bibliography entries as an array of string, or an
