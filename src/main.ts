@@ -4,30 +4,38 @@ import { Spinner } from 'jsr:@std/cli/unstable-spinner';
 
 import * as yaml from 'jsr:@std/yaml';
 import { walk } from 'jsr:@std/fs/walk';
-import * as Diff from 'diff';
 
 import type * as CSL from './csl.ts';
 
 import { runOneTestSpecification } from './testRunners.ts';
 import { validateTestSpecification } from './specification.ts';
+import { diffWithColors } from './utils.ts';
 import metadata from '../deno.json' with { type: 'json' };
 
-function diffWithColors(expected: string, actual: string) {
-    const difference = Diff.diffChars(expected, actual);
-    let coloredExpected = '';
-    let coloredActual = '';
-    for (const part of difference) {
-        if (part.added) {
-            coloredActual += colors.bgRed(part.value);
-        } else if (part.removed) {
-            coloredExpected += colors.bgRed(part.value);
-        } else {
-            coloredActual += part.value;
-            coloredExpected += part.value;
-        }
-    }
-    return [coloredExpected, coloredActual];
+//////////
+// Define the commands available on the command line
+
+if (import.meta.main) {
+    const program = new Command();
+    program
+        .name('modish')
+        .description(metadata.description)
+        .version(metadata.version);
+
+    program
+        .command('test')
+        .description('Run tests')
+        .option('-b, --bail', 'abort after first test failure')
+        .option('-q, --quiet', 'suppress all normal output')
+        .option('--verbose', 'output status for each file')
+        .argument('[test-files...]')
+        .action(testingCommand);
+
+    program.parse();
 }
+
+//////////
+// Functions executed when the commands are called
 
 /** Options for {@linkcode testingCommand} */
 export interface TestingCmdOptions {
@@ -175,23 +183,4 @@ export async function testingCommand(
     }
 
     Deno.exitCode = allPassed ? 0 : 2;
-}
-
-if (import.meta.main) {
-    const program = new Command();
-    program
-        .name('modish')
-        .description(metadata.description)
-        .version(metadata.version);
-
-    program
-        .command('test')
-        .description('Run tests')
-        .option('-b, --bail', 'abort after first test failure')
-        .option('-q, --quiet', 'suppress all normal output')
-        .option('--verbose', 'output status for each file')
-        .argument('[test-files...]')
-        .action(testingCommand);
-
-    program.parse();
 }
