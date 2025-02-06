@@ -135,6 +135,72 @@ export class Bibliographer {
     }
 
     /**
+     * Parse a string and return an array of {@linkcode CiteItem}.
+     *
+     * The string represents a citation or group of citations, e.g. one footnote.
+     * Citations are separated by semi-colons. Each citation includes an identifier
+     * optionally followed by a space, a label (e.g. "p." or "chapter") and a
+     * locator, i.e. "Smith1776 p. 123-124; Keynes1936 chap. 3"
+     *
+     * @example Usage
+     * ```ts
+     * import { assertEquals } from "jsr:@std/assert";
+     *
+     * const bibliographer = new Bibliographer();
+     * const parsed = parseInput("Smith1776 p. 123-124; Keynes1936 chap. 3");
+     *
+     * assertEquals(
+     *   parsed,
+     *   [
+     *     {"id": "Smith1776", "label": "page", "locator": "123-124"},
+     *     {"id": "Keynes1936", "label": "chapter", "locator": "3"}
+     *   ]
+     * );
+     * ```
+     *
+     * @param input String to parse.
+     * @returns The parsed items.
+     */
+    parseInput(input: string=""): CiteItem[] {
+        const locators: Record<string, string> = {
+            'bk.': 'book', 'bks.': 'book', 'chap.': 'chapter', 'chaps.': 'chapter',
+            'col.': 'column', 'cols.': 'column',
+            'fig.': 'figure', 'figs.': 'figure', 'fol.': 'folio', 'fols.': 'folio',
+            'no.': 'number', 'Os.': 'number', 'l.': 'line', 'll.': 'line',
+            'n.': 'note', 'nn.': 'note', 'op.': 'opus', 'opp.': 'opus',
+            'p': 'page', 'p.': 'page', 'pp.': 'page',
+            'para.': 'paragraph', 'paras.': 'paragraph', '¶': 'paragraph',
+            '¶¶': 'paragraph', '§': 'paragraph', '§§': 'paragraph',
+            'pt.': 'part', 'pts.': 'part', 'sec.': 'section', 'secs.': 'section',
+            's.v.': 'sub verbo', 's.vv.': 'sub verbo',
+            'v.': 'verse', 'vv.': 'verse', 'vol.': 'volume', 'vols.': 'volume',
+        };
+
+        const parsedInput: CiteItem[] = [];
+
+        const items = input.split(';');
+        for (const item of items) {
+            if (item.trim() == '') {
+                continue;
+            }
+            const parts = item.trim().split(' ').filter((part: string) => part != '');
+            const citationItem: CiteItem = { 'id': parts[0] };
+            if (parts.length > 1) {
+                if (parts[1] in locators) {
+                    citationItem.label = locators[parts[1]];
+                    citationItem.locator = parts[2];
+                } else {
+                    citationItem.label = parts.slice(1, -1).join(' ');
+                    citationItem.locator = parts.at(-1);
+                }
+            }
+            parsedInput.push(citationItem);
+        }
+
+        return parsedInput;
+    }
+
+    /**
      * Add a citation to one or more registered items.
      *
      * The function does not return anything. Use {@link getCitations} to get

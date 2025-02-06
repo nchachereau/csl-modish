@@ -9,7 +9,7 @@ import * as Diff from 'diff';
 import type * as CSL from './csl.ts';
 
 import { Bibliographer, UnregisteredItemError } from './bibliographer.ts';
-import { validateTestSpecification, parseInput, type TestSpecification } from './specification.ts';
+import { validateTestSpecification, type TestSpecification } from './specification.ts';
 import metadata from '../deno.json' with { type: 'json' };
 
 function diffWithColors(expected: string, actual: string) {
@@ -69,7 +69,6 @@ export function test(specification: TestSpecification, items: CSL.Data[]): TestR
             });
             continue;
         }
-        const inputs = parseInput(rawInputs);
         const bibliographer = new Bibliographer();
         // if the test case does not specify the style, use the globally defined style
         const style = testCase.style ?? specification.style;
@@ -105,8 +104,9 @@ export function test(specification: TestSpecification, items: CSL.Data[]): TestR
             continue;
         }
 
-        for (const input of inputs) {
+        for (const rawInput of rawInputs) {
             try {
+                const input = bibliographer.parseInput(rawInput);
                 bibliographer.cite(input);
             } catch(err) {
                 if (err instanceof UnregisteredItemError) {

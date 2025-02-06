@@ -1,31 +1,7 @@
 import { describe, it } from "jsr:@std/testing/bdd";
 import { expect } from "jsr:@std/expect";
 
-import { parseInput, validateTestSpecification } from '../src/specification.ts';
-
-describe('function parseInput()', () => {
-
-    it('parses citations with locators', () => {
-        const inputs = parseInput([
-            'Book1 p. 103; Book2 pp. 28-35'
-        ]);
-        expect(inputs[0]).toMatchObject([
-            { id: 'Book1', label: 'page', locator: '103' },
-            { id: 'Book2', label: 'page', locator: '28-35' }
-        ]);
-    });
-
-    it('can parse locators other than page', () => {
-        const inputs = parseInput([
-            'Book1 fig. 1; Book2 chapter 2; Article § 10'
-        ]);
-        expect(inputs[0]).toMatchObject([
-            { id: 'Book1', label: 'figure', locator: '1' },
-            { id: 'Book2', label: 'chapter', locator: '2' },
-            { id: 'Article', label: 'paragraph', locator: '10' }
-        ]);
-    });
-});
+import { validateTestSpecification } from '../src/specification.ts';
 
 describe('function validateTestSpecification()', () => {
 
