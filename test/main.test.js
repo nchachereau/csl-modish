@@ -2,10 +2,10 @@ import { describe, it } from "jsr:@std/testing/bdd";
 import { assertSpyCall, assertSpyCalls, returnsNext, stub, spy } from "jsr:@std/testing/mock";
 import { expect } from "jsr:@std/expect";
 
-import { test } from '../src/main.ts';
+import { runOneTestSpecification } from '../src/main.ts';
 import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.ts';
 
-describe('function test()', () => {
+describe('function runOneTestSpecification()', () => {
 
     it('registers items to cite', () => {
         const items = [
@@ -23,7 +23,7 @@ describe('function test()', () => {
         const bibliographerRegisterItemsSpy = spy(Bibliographer.prototype, 'registerItems');
 
         try {
-            test({input: [], style: 'test.csl'}, items);
+            runOneTestSpecification({input: [], style: 'test.csl'}, items);
         } finally {
             bibliographerLoadStyleStub.restore();
         }
@@ -43,7 +43,7 @@ describe('function test()', () => {
 
         let passed, counts, failures;
         try {
-            [passed, counts, failures] = test({
+            [passed, counts, failures] = runOneTestSpecification({
                 style: 'style.csl',
                 input: input,
                 citations: citations
@@ -74,7 +74,7 @@ describe('function test()', () => {
 
         let passed, counts, failures;
         try {
-            [passed, counts, failures] = test({
+            [passed, counts, failures] = runOneTestSpecification({
                 style: 'style.csl',
                 input: input,
                 citations: citations
@@ -104,7 +104,7 @@ describe('function test()', () => {
 
         let passed, counts, failures;
         try {
-            [passed, counts, failures] = test({
+            [passed, counts, failures] = runOneTestSpecification({
                 style: 'style.csl',
                 input: input,
                 bibliography: bibliography
@@ -134,7 +134,7 @@ describe('function test()', () => {
 
         let passed, counts, failures;
         try {
-            [passed, counts, failures] = test({
+            [passed, counts, failures] = runOneTestSpecification({
                 style: 'style.csl',
                 input: input,
                 bibliography: bibliography
@@ -158,7 +158,7 @@ describe('function test()', () => {
     it('reports failure if no inputs are specified', () => {
         const citations = ['Smith 2024.', 'Doe 1990.'];
 
-        const [passed, _counts, failures] = test({style: 'style.csl', citations: citations}, []);
+        const [passed, _counts, failures] = runOneTestSpecification({style: 'style.csl', citations: citations}, []);
 
         expect(passed).toBe(false);
         expect(failures[0].type).toEqual('error');
@@ -178,7 +178,7 @@ describe('function test()', () => {
 
         let passed, _counts, failures;
         try {
-            [passed, _counts, failures] = test({style: 'style.csl', input: input}, []);
+            [passed, _counts, failures] = runOneTestSpecification({style: 'style.csl', input: input}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -196,7 +196,7 @@ describe('function test()', () => {
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const input = [];
         try {
-            test({input: input, style: 'test.csl'}, []);
+            runOneTestSpecification({input: input, style: 'test.csl'}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
         }
@@ -209,7 +209,7 @@ describe('function test()', () => {
         const bibliographerLoadStyleStub = stub(Bibliographer.prototype, 'loadStyle', returnsNext([true]));
         const input = [];
         try {
-            test({input: input, style: 'test.csl', lang: 'de-CH'}, []);
+            runOneTestSpecification({input: input, style: 'test.csl', lang: 'de-CH'}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
         }
@@ -222,7 +222,7 @@ describe('function test()', () => {
         const citeStub = stub(Bibliographer.prototype, 'addCitation', returnsNext([]));
         let passed, _counts, failures;
         try {
-            [passed, _counts, failures] = test(
+            [passed, _counts, failures] = runOneTestSpecification(
                 {
                     style: 'xtestz.csl',
                     input: [ 'Book1' ],
@@ -244,7 +244,7 @@ describe('function test()', () => {
 
         let passed, _counts, failures;
         try {
-            [passed, _counts, failures] = test(
+            [passed, _counts, failures] = runOneTestSpecification(
                 {
                     style: 'somestyle.csl',
                     input: input,
@@ -272,7 +272,7 @@ describe('function test()', () => {
 
         let passed, _counts, failures;
         try {
-            [passed, _counts, failures] = test(
+            [passed, _counts, failures] = runOneTestSpecification(
                 {
                     style: 'style.csl',
                     input: globalInput,
@@ -303,7 +303,7 @@ describe('function test()', () => {
 
         let passed, _counts, failures;
         try {
-            [passed, _counts, failures] = test({tests: [{style: styleName, input: input, citations: citations}]}, []);
+            [passed, _counts, failures] = runOneTestSpecification({tests: [{style: styleName, input: input, citations: citations}]}, []);
         } finally {
             bibliographerLoadStyleStub.restore();
             citeStub.restore();
@@ -326,7 +326,7 @@ describe('function test()', () => {
 
         let passed, _counts, failures;
         try {
-            [passed, _counts, failures] = test(
+            [passed, _counts, failures] = runOneTestSpecification(
                 {
                     input: input,
                     tests: [
@@ -360,7 +360,7 @@ describe('function test()', () => {
 
         let passed, _counts, failures;
         try {
-            [passed, _counts, failures] = test(
+            [passed, _counts, failures] = runOneTestSpecification(
                 {
                     style: 'style.csl',
                     bibliography: bibliography,

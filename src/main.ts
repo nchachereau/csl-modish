@@ -29,30 +29,53 @@ function diffWithColors(expected: string, actual: string) {
     return [coloredExpected, coloredActual];
 }
 
-interface ErrorFailure {
+/** Details of a test failed because of errors in the test specification. */
+export interface ErrorFailure {
+    /** Failure type: error. */
     type: 'error';
+    /** A message explaining the error. */
     error: string;
 }
-interface CitationFailure {
+/** Details of a failed citation formatting. */
+export interface CitationFailure {
+    /** Failure type: citation */
     type: 'citation';
+    /** The formatted citation. */
     actual: string;
+    /** The expected formatted citation. */
     expected: string;
 }
-interface BibliographyFailure {
+/** Details of a failed bibliography formatting. */
+export interface BibliographyFailure {
+    /** Failure type: bibliography. */
     type: 'bibliography';
+    /** The formatted bibliography. */
     actual: string;
+    /** The expected formatted bibliography. */
     expected: string;
 }
-type Failure = ErrorFailure | CitationFailure | BibliographyFailure;
+/** Details concerning a test failure */
+export type Failure = ErrorFailure | CitationFailure | BibliographyFailure;
 
-interface TestResults {
+/** Number of passed and failed tests. */
+export interface TestResults {
+    /** Number of passed and failed citations. */
     citations: [passed: number, failed: number];
+    /** Number of passed and failed bibliographies. */
     bibliography: [passed: number, failed: number];
 }
 
-type TestResultSummary = [boolean, TestResults, Failure[]];
+/** Results from running one test specification. */
+export type TestResultSummary = [boolean, TestResults, Failure[]];
 
-export function test(specification: TestSpecification, items: CSL.Data[]): TestResultSummary {
+/**
+ * Run the test(s) contained in one valid specification.
+ *
+ * @param specification The test specification.
+ * @param items The items cited in the test specification.
+ * @returns A summary of the test results.
+ */
+export function runOneTestSpecification(specification: TestSpecification, items: CSL.Data[]): TestResultSummary {
     // if `tests` is not specified, assume that there is only one global test
     const tests = specification.tests ?? [specification];
 
@@ -158,7 +181,26 @@ export function test(specification: TestSpecification, items: CSL.Data[]): TestR
     return [passed, counts, failures];
 }
 
-async function testCommand(testFiles: string[], options={bail: false, quiet: false, verbose: false}) {
+/** Options for {@linkcode testingCommand} */
+export interface TestingCmdOptions {
+    /** abort after first failure */
+    bail: boolean;
+    /** suppress all output */
+    quiet: boolean;
+    /** output status for each test file */
+    verbose: boolean;
+}
+
+/**
+ * Function called when the user runs `modish test`.
+ *
+ * @param testFiles List of files containing the tests to be run.
+ * @param options Options, passed on the command line
+ */
+export async function testingCommand(
+    testFiles: string[],
+    options: TestingCmdOptions={bail: false, quiet: false, verbose: false}
+) {
     if (testFiles.length == 0) {
         const files = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
         testFiles = files.map((f) => f.path);
@@ -231,7 +273,7 @@ async function testCommand(testFiles: string[], options={bail: false, quiet: fal
             }
         }
 
-        const [passed, counts, failures] = test(spec, references);
+        const [passed, counts, failures] = runOneTestSpecification(spec, references);
 
         const checkMark = passed ? colors.green('✔') : colors.red('✘');
         if (verbose || (!quiet && failures.length)) {
@@ -301,7 +343,7 @@ if (import.meta.main) {
         .option('-q, --quiet', 'suppress all normal output')
         .option('--verbose', 'output status for each file')
         .argument('[test-files...]')
-        .action(testCommand);
+        .action(testingCommand);
 
     program.parse();
 }
