@@ -166,7 +166,7 @@ export class Bibliographer {
             'bk.': 'book', 'bks.': 'book', 'chap.': 'chapter', 'chaps.': 'chapter',
             'col.': 'column', 'cols.': 'column',
             'fig.': 'figure', 'figs.': 'figure', 'fol.': 'folio', 'fols.': 'folio',
-            'no.': 'number', 'Os.': 'number', 'l.': 'line', 'll.': 'line',
+            'no.': 'issue', 'Os.': 'issue', 'l.': 'line', 'll.': 'line',
             'n.': 'note', 'nn.': 'note', 'op.': 'opus', 'opp.': 'opus',
             'p': 'page', 'p.': 'page', 'pp.': 'page',
             'para.': 'paragraph', 'paras.': 'paragraph', '¶': 'paragraph',
@@ -174,6 +174,12 @@ export class Bibliographer {
             'pt.': 'part', 'pts.': 'part', 'sec.': 'section', 'secs.': 'section',
             's.v.': 'sub verbo', 's.vv.': 'sub verbo',
             'v.': 'verse', 'vv.': 'verse', 'vol.': 'volume', 'vols.': 'volume',
+            'app.': 'appendix', 'apps.': 'appendix', 'art.': 'article',
+            'arts.': 'article', 'c.': 'canon', 'cc.': 'canon',
+            'loc.': 'elocation', 'locs.': 'elocation', 'eq.': 'equation',
+            'eqs.': 'equation', 'r.': 'rule', 'rr.': 'rule', 'sc.': 'scene',
+            'scs.': 'scene', 'supp.': 'supplement', 'supps.': 'supplement',
+            'tbl.': 'table', 'tbls.': 'table', 'tit.': 'title', 'tits.': 'title'
         };
 
         const parsedInput: CiteItem[] = [];
