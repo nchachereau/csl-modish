@@ -102,17 +102,20 @@ The input is a list of identifiers:
 input:
 - ThompsonMaking p. 128
 - PikettyCapital; MillsPower
-- MillsPower
+- MillsPower chap. 1
 ```
 
 The identifiers are the `id` strings in the `references.json` (the
 [BetterBibTex](https://retorque.re/zotero-better-bibtex/) plugin gives more
 control over these ids when exporting from Zotero). Each identifier in the
 `input` list can optionally be followed by a space and a locator, as shown in
-the example. All [locators from the CSL specification](https://docs.citationstyles.org/en/stable/specification.html#locators)
-are supported, in full or in abbreviated form (use `sub verso` and not
-`sub-verso`). To include several references in the same citation (e.g. to test
-separators), connect them by semicolons, as in the example.
+the examples.
+[Locators](https://docs.citationstyles.org/en/stable/specification.html#locators)
+in full form ("page", "chapter", "article", etc.) are supported, but you can
+also use English-language abbreviations and symbols ("p.", "pp.", "chap.",
+"art.", "bk.", "fig.", "figs.", "§", "§§", etc.). To include several references
+in the same citation (e.g. to test separators), connect them by semicolons, as
+in the example.
 
 ### output: citations and bibliography
 
