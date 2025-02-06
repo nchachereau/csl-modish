@@ -2,15 +2,23 @@ import { Ajv2020, type DefinedError } from 'ajv/dist/2020.js';
 import schema from './modish.schema.json' with { type: 'json' };
 import { suggestSimilar } from './suggestSimilar.ts';
 
-interface SingleTestSpecification {
+/** One test specification. */
+export interface SingleTestSpecification {
+  /** Path to the CSL file to test. */
   style?: string;
+  /** Locale to use for this test. */
   lang?: string;
+  /** The citations to add during the test. */
   input?: string[];
+  /** The expected formatted citations. */
   citations?: string[];
+  /** The expected formatted bibliography. */
   bibliography?: string[];
 };
 
+/** One or more specified tests. */
 export interface TestSpecification extends SingleTestSpecification {
+  /** An array of tests to run. */
   tests?: SingleTestSpecification[];
 }
 
@@ -55,12 +63,25 @@ function pluralize(verbForm: string) {
 const ajv = new Ajv2020({allErrors: true});
 const validate = ajv.compile(schema);
 
+/**
+ * Check that the passed object is a valid test specification.
+ *
+ * @param specification The object to validate.
+ * @returns An array containing:
+ *   1) true or false to indicate whether the object is a valid test specification;
+ *   2) if false, an array of messages detailling the errors.
+ */
 export function validateTestSpecification(specification: object): [boolean, string[]] {
   const valid = validate(specification);
 
+  // The validation of the object is simply done by using a JSON schema
+  // and the Ajv library, a JSON schema validator
   if (valid) {
     return [true, []];
   }
+
+  // Most of the code in this function is about transforming the errors reported
+  // by Ajv into messages useful to the user
 
   const errorMessages: string[] = [];
   let lastArrayProperty: string = '';
