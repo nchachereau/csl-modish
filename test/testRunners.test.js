@@ -2,7 +2,7 @@ import { describe, it } from "jsr:@std/testing/bdd";
 import { assertSpyCall, assertSpyCalls, returnsNext, stub, spy } from "jsr:@std/testing/mock";
 import { expect } from "jsr:@std/expect";
 
-import { runOneTestSpecification } from '../src/main.ts';
+import { runOneTestSpecification } from '../src/testRunners.ts';
 import { Bibliographer, UnregisteredItemError } from '../src/bibliographer.ts';
 
 describe('function runOneTestSpecification()', () => {
