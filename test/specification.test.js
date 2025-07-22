@@ -45,6 +45,8 @@ describe('TestSpecification validation', () => {
     expect(e[0]).toMatch(/\bunknown\b/i);
     expect(e[0]).toMatch(/\bstyl\b/);
     expect(e[0]).toMatch(/\bstyle\b/);
+    expect(e[0]).toMatch(/\balng\b/);
+    expect(e[0]).toMatch(/\blang\b/);
   });
 
   it('reports when a property should have been a string', () => {

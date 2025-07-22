@@ -138,7 +138,7 @@ export class TestSpecification {
             if (spec === null || typeof spec != 'object') {
                 this.errors.push(
                     `Error encountered when loading file ${specificationFile}.\n` +
-                    'Check that the contents follow the guidelines for test files.\n\n'
+                    'Check that the contents follow the guidelines for test files.\n'
                 );
             } else {
                 this.loadFromObject(spec);
@@ -269,9 +269,9 @@ export class TestSpecification {
                     } else {
                         itemsStr = `${items.at(-1)} entry`;
                     }
-                    // "all entries in "citations" must be strings"
-                    // "all entries in "tests" should define properties such as…"
-                    let err = `all entries in "${property}"${level} ${errorDescription}, `;
+                    // "All entries in "citations" must be strings"
+                    // "All entries in "tests" should define properties such as…"
+                    let err = `All entries in "${property}"${level} ${errorDescription}, `;
                     const arr = getPropertyByPath(specification, error.instancePath) as object[] | string[];
                     if (items.length == arr.length) {
                         err += `but none ${pluralize(verb)}. ${advice}`;
@@ -285,7 +285,7 @@ export class TestSpecification {
                     errorMessages.push(`"${property}"${level} ${errorDescription}. ${advice}`);
                 } else {
                     // 'the test file should define properties such as…''
-                    errorMessages.push(`the test file ${errorDescription}. ${advice}`);
+                    errorMessages.push(`The test file ${errorDescription}. ${advice}`);
                 }
                 // unknown properties
             } else if (error.keyword == 'additionalProperties') {
@@ -301,7 +301,7 @@ export class TestSpecification {
         }
         // warnings about unknown properties
         if (unknownProperties.length) {
-            let warning = 'found unknown ';
+            let warning = 'Found unknown ';
             if (unknownProperties.length > 1) {
                 warning += 'properties ';
                 warning += unknownProperties.slice(0, -1).map((p) => `"${p[0]}"`).join(', ');
@@ -312,9 +312,11 @@ export class TestSpecification {
                     }
                     return `${p[1].map((pp: string) => `"${pp}"`).join(' or ')} instead of "${p[0]}"`;
                 }).filter((sugg) => sugg !== '');
-                if (suggestions.length) {
+                if (suggestions.length > 1) {
                     warning += `Did you mean ${suggestions.slice(0, -1).join(', ')}`;
                     warning += ` and ${suggestions.at(-1)}?`;
+                } else if (suggestions.length) {
+                    warning += `Did you mean ${suggestions[0]}?`;
                 }
             } else {
                 const [property, suggestions] = unknownProperties[0];
