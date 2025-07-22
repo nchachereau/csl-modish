@@ -113,7 +113,7 @@ export class TestSpecification {
      */
     _specification: TestSpecificationSuite;
     /** XXX */
-    valid: Boolean;
+    valid: boolean;
     /** XXX */
     errors: string[];
 
