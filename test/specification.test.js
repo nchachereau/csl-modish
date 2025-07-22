@@ -1,9 +1,9 @@
 import { describe, it } from "jsr:@std/testing/bdd";
 import { expect } from "jsr:@std/expect";
 
-import { validateTestSpecification } from '../src/specification.ts';
+import { TestSpecification } from '../src/specification.ts';
 
-describe('function validateTestSpecification()', () => {
+describe('TestSpecification validation', () => {
 
   it('validates a valid test specification', () => {
     const spec = {
@@ -11,16 +11,19 @@ describe('function validateTestSpecification()', () => {
       input: ['Test'],
       citations: ['Tester (2024): Test']
     };
-    const [v, e] = validateTestSpecification(spec);
-    expect(v).toBe(true);
-    expect(e).toHaveLength(0);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    expect(ts.valid).toBe(true);
+    expect(ts.errors).toHaveLength(0);
   });
 
   /* Global level */
 
   it('reports unknown properties at the global level', () => {
     const spec = { notvalid: 'minimal.csl', also_invalid: 'de_CH' };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bunknown\b/i);
@@ -32,7 +35,9 @@ describe('function validateTestSpecification()', () => {
 
   it('suggests corrections to misspellings', () => {
     const spec = { styl: 'minimal.csl', alng: 'de_CH' };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bunknown\b/i);
@@ -42,7 +47,9 @@ describe('function validateTestSpecification()', () => {
 
   it('reports when a property should have been a string', () => {
     const spec = { style: { 'Journal Main Title': 'Subtitle.csl' } };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     // mentions property
@@ -55,7 +62,9 @@ describe('function validateTestSpecification()', () => {
 
   it('reports when a property should have been an array', () => {
     const spec = { citations: 'minimal.csl' };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\blist\b/);
@@ -71,7 +80,9 @@ describe('function validateTestSpecification()', () => {
         { style: 'other.csl' }
       ]
     };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bstring\b/);
@@ -84,7 +95,9 @@ describe('function validateTestSpecification()', () => {
       { citations: [ 'Citation1' ] },
       { bibliography: [ 'Bibliography' ] }
     ];
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\btest file\b/i);
@@ -98,7 +111,9 @@ describe('function validateTestSpecification()', () => {
 
   it('reports an invalid value in an array', () => {
     const spec = { citations: [ { author: 'title' }, 'xxx' ] };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     // mentions the property
@@ -114,7 +129,9 @@ describe('function validateTestSpecification()', () => {
       { author: 'title' },
       { author2: 'title2' }
     ] };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     // mentions the property
@@ -130,7 +147,9 @@ describe('function validateTestSpecification()', () => {
 
   it('reports unknown properties in test suite', () => {
     const spec = { tests: [ { notvalid: 'xxx' } ] };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/notvalid/);
@@ -141,7 +160,9 @@ describe('function validateTestSpecification()', () => {
       { },
       { style: [ 'minimal.csl', 'other.csl' ] }
     ] };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bstyle\b/);
@@ -155,7 +176,9 @@ describe('function validateTestSpecification()', () => {
       { },
       { citations: 'xxx' }
     ] };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\bcitations\b/);
@@ -167,7 +190,9 @@ describe('function validateTestSpecification()', () => {
     const spec = {
       tests: [ [ { citations: [ 'Citation1', 'Citation2' ] } ] ]
     };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e[0]).toMatch(/\btests\b/i);
@@ -185,7 +210,9 @@ describe('function validateTestSpecification()', () => {
         { lang: 'fr_FR', citations: [ 'Correct', 'Correct' ] }
       ]
     };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(1);
     expect(e).toMatch(/1st test/);
@@ -201,7 +228,9 @@ describe('function validateTestSpecification()', () => {
         { bibliography: [ 'Biblio2' ] }
       ]
     };
-    const [v, e] = validateTestSpecification(spec);
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    const [v, e] = [ts.valid, ts.errors];
     expect(v).toBe(false);
     expect(e).toHaveLength(3);
     expect(e[0]).toMatch(/input/);
