@@ -3,7 +3,7 @@ import schema from './modish.schema.json' with { type: 'json' };
 import * as yaml from 'jsr:@std/yaml';
 import { suggestSimilar } from './suggestSimilar.ts';
 import type * as CSL from './csl.ts';
-import { Bibliographer, UnregisteredItemError } from './bibliographer.ts';
+import { type Bibliographer, getBibliographer, UnregisteredItemError } from './bibliographer.ts';
 
 /** One test specification. */
 export interface SingleTestSpecification {
@@ -353,7 +353,6 @@ export class TestSpecification {
                 });
                 continue;
             }
-            const bibliographer = new Bibliographer();
             // if the test case does not specify the style, use the globally defined style
             const style = testCase.style ?? this._specification.style;
             const lang = testCase.lang ?? this._specification.lang;
@@ -361,8 +360,9 @@ export class TestSpecification {
                 failures.push({ type: 'error', error: 'Please specify the path of the CSL style to test.' });
                 continue;
             }
+            let bibliographer: Bibliographer;
             try {
-                bibliographer.loadStyle(style, lang);
+                bibliographer = getBibliographer(style, lang);
             } catch (err) {
                 if (err instanceof Error && err.name == 'NotFound') {
                     failures.push({
@@ -374,6 +374,7 @@ export class TestSpecification {
                     throw err;
                 }
             }
+            bibliographer.clearCitations();
             bibliographer.registerItems(items);
 
             const expectedCitations = testCase.citations;

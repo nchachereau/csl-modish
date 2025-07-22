@@ -253,6 +253,13 @@ export class Bibliographer {
     }
 
     /**
+     * Reset citations, as if {@linkcode addCitation} had never been called.
+     */
+    clearCitations() {
+        this._citations = [];
+    }
+
+    /**
      * Get array of formatted citations.
      *
      * Formats the citations previously added by calling {@linkcode addCitation}
@@ -288,4 +295,33 @@ export class Bibliographer {
         const pattern = /<div class="csl-entry">(.+)<\/div>/;
         return entries.map((entry: string) => entry.trim().replace(pattern, '$1'));
     }
+}
+
+const bibliographers: Record<string, Record<string, Bibliographer>> = {};
+
+/**
+ * Return a {@linkcode Bibliographer} instance for a style and language.
+ *
+ * This is an alternative to directly instantiating a Bibliographer: the
+ * function keeps a cache of Bibliographer objects, and only creates a
+ * new instance if needed.
+ *
+ * @param style Path to the CSL file to load.
+ * @param lang The language to use for formatting citations.
+ *   See {@linkcode Bibliographer#loadStyle}
+ * @returns The requested Bibliographer object.
+ */
+export function getBibliographer(style: string, lang: string | undefined): Bibliographer {
+    const language = lang ?? "_";
+    if (style in bibliographers) {
+        if (language in bibliographers[style]) {
+            return bibliographers[style][language];
+        }
+    }
+
+    const bibliographer = new Bibliographer();
+    bibliographer.loadStyle(style, lang);
+    bibliographers[style] ??= {};
+    bibliographers[style][language] = bibliographer;
+    return bibliographer;
 }
