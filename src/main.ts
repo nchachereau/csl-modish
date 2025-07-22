@@ -63,29 +63,24 @@ export async function testingCommand(
         testFiles = await expandFileArguments(testFiles);
     }
 
-    const referenceFile = 'tests/references.json';
+    let referenceFiles = await Array.fromAsync(walk('tests/', { exts: ['.json'] }));
+    referenceFiles = referenceFiles.map((f) => f.path);
+    if (referenceFiles.length == 0) {
+        console.error(
+            "No CSL-JSON file was found in the `tests` directory. Modish needs at least one\n" +
+                "such file containing the bibliographic entries for the tests. Create a \n" +
+                "CSL-JSON reference file, for instance by exporting it from your reference\n" +
+                "software (e.g. Zotero)."
+        )
+        Deno.exitCode = 3;
+        return;
+    }
     let references: CSL.Data[];
     try {
-        references = JSON.parse(await Deno.readTextFile(referenceFile));
-    } catch(err) {
-        if (err instanceof Error && err.name == 'NotFound') {
-            console.error(
-                `No CSL-JSON reference file '${referenceFile}. Create one, for instance by\n` +
-                'exporting it from your reference management software (e.g. Zotero).');
-            Deno.exitCode = 3;
-            return;
-        } else if (err instanceof SyntaxError) {
-            console.error(
-                `Could not parse CSL-JSON reference file ${referenceFile}. You may need to\n` +
-                    '  export one again from your reference management software (e.g. Zotero).\n' +
-                    'If you wrote the JSON file yourself, you need to fix the syntax. Parsing error was:\n' +
-                    `  '${err.message}'.`
-            );
-            Deno.exitCode = 3;
-            return;
-        } else {
-            throw err;
-        }
+        references = loadCSLReferenceFiles(referenceFiles);
+    } catch (err) {
+        Deno.exitCode = 3;
+        return;
     }
 
     const quiet = Boolean(options.quiet);
@@ -178,3 +173,43 @@ export async function testingCommand(
 
     Deno.exitCode = allPassed ? 0 : 2;
 }
+
+//////////
+// Helper functions
+
+/**
+ * Load CSL-JSON files.
+ *
+ * @param files An array of the paths of the files to load.
+ * @returns An array containing all items loaded from the CSL-JSON files.
+ */
+function loadCSLReferenceFiles(files: string[]): CSL.Data[] {
+    const references: CSL.Data[] = [];
+    for (const file of files) {
+        try {
+            references.push(...JSON.parse(Deno.readTextFileSync(file)));
+        } catch (err) {
+            const errorMessage =
+                `Could not parse CSL-JSON reference file "${file}". You may need to\n` +
+                '  export it again from your reference management software (e.g. Zotero).\n'
+            if (err instanceof SyntaxError) {
+                console.error(
+                     errorMessage +
+                    'If you wrote the JSON file yourself, you need to fix the syntax. Parsing error was:\n' +
+                    `  '${err.message}'.` + "\n"
+                );
+            } else if (err instanceof TypeError) {
+                 console.error(errorMessage);
+            } else {
+                console.error(
+                    "Encountered an unexpected error when reading the CSL-JSON files.\n" +
+                    "Make sure the JSON files in the `tests` directory are all valid CSL-JSON files.\n"
+                );
+            }
+            throw new StopProcessError();
+        }
+    }
+    return references;
+}
+
+class StopProcessError extends Error {}

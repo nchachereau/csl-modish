@@ -396,7 +396,7 @@ export class TestSpecification {
                     if (err instanceof UnregisteredItemError) {
                         failures.push({
                             type: 'error',
-                            error: `No reference ${err.erroneousIdentifier} could be found in references.json.`
+                            error: `No reference ${err.erroneousIdentifier} was found in your CSL-JSON files.`
                         });
                     } else {
                         throw err;
