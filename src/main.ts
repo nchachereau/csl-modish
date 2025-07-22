@@ -2,7 +2,6 @@ import { Command } from 'commander';
 import * as colors from 'jsr:@std/fmt/colors';
 import { Spinner } from 'jsr:@std/cli/unstable-spinner';
 
-import * as yaml from 'jsr:@std/yaml';
 import { walk } from 'jsr:@std/fs/walk';
 
 import type * as CSL from './csl.ts';
