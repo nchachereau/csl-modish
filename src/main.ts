@@ -63,8 +63,8 @@ export async function testingCommand(
         testFiles = await expandFileArguments(testFiles);
     }
 
-    let referenceFiles = await Array.fromAsync(walk('tests/', { exts: ['.json'] }));
-    referenceFiles = referenceFiles.map((f) => f.path);
+    const refFiles = await Array.fromAsync(walk('tests/', { exts: ['.json'] }));
+    const referenceFiles = refFiles.map((f) => f.path);
     if (referenceFiles.length == 0) {
         console.error(
             "No CSL-JSON file was found in the `tests` directory. Modish needs at least one\n" +
