@@ -112,9 +112,9 @@ export class TestSpecification {
      * @internal
      */
     _specification: TestSpecificationSuite;
-    /** XXX */
+    /** Whether the test specification is valid. */
     valid: boolean;
-    /** XXX */
+    /** List of validation errors when the specification is invalid. */
     errors: string[];
 
     /** Construct a new instance. */
