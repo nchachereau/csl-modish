@@ -7,7 +7,7 @@ import { walk } from 'jsr:@std/fs/walk';
 import type * as CSL from './csl.ts';
 
 import { TestSpecification } from './specification.ts';
-import { diffWithColors } from './utils.ts';
+import { diffWithColors, expandFileArguments } from './utils.ts';
 import metadata from '../deno.json' with { type: 'json' };
 
 //////////
@@ -59,7 +59,10 @@ export async function testingCommand(
         const files = await Array.fromAsync(walk('tests/', { exts: ['.yml'] }));
         testFiles = files.map((f) => f.path);
         testFiles.sort();
+    } else if (Deno.build.os == "windows") {
+        testFiles = await expandFileArguments(testFiles);
     }
+
     const referenceFile = 'tests/references.json';
     let references: CSL.Data[];
     try {
