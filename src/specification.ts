@@ -138,18 +138,20 @@ export class TestSpecification {
             if (spec === null || typeof spec != 'object') {
                 this.errors.push(
                     `Error encountered when loading file ${specificationFile}.\n` +
-                    'Check that the\n contents follow the guidelines for test\n' +
-                    'files.\n\n'
+                    'Check that the contents follow the guidelines for test files.\n\n'
                 );
             } else {
                 this.loadFromObject(spec);
+                if (!this.valid) {
+                    this.errors = this.errors.map((e) => ` - ${e}`);
+                    this.errors.unshift(`Encountered error(s) when loading file ${specificationFile}.\n`);
+                }
             }
         } catch(err) {
             if (err instanceof SyntaxError) {
                 this.errors.push(
                     `Error encountered when loading file ${specificationFile}.\n` +
-                    'Check that the contents follow the guidelines for test\n' +
-                    'files.\n\n' +
+                    'Check that the contents follow the guidelines for test files.\n\n' +
                     `The error was:\n ${err.message}`
                 );
             } else {
