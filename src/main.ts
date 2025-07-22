@@ -83,39 +83,22 @@ export async function testingCommand(
         return;
     }
 
+    let testSpecifications: Record<string, TestSpecification>;
+    try {
+        testSpecifications = loadTestSpecifications(testFiles);
+    } catch (err) {
+        Deno.exitCode = 3;
+        return;
+    }
+
     const quiet = Boolean(options.quiet);
     const verbose = (!quiet && options.verbose) ? true : false;
     const spinner = new Spinner({ message: 'Running tests…' });
 
     const passes = [];
-    for (const testFile of testFiles) {
+    for (const [testFile, specification] of Object.entries(testSpecifications)) {
         if (!quiet) {
             spinner.start();
-        }
-
-        const specification = new TestSpecification();
-        try {
-            specification.loadFromFile(testFile);
-            if (!specification.valid) {
-                for (const err of specification.errors) {
-                    console.error(err);
-                }
-                Deno.exit(3)
-            }
-        } catch(err) {
-            if (err instanceof Error && err.name == 'NotFound') {
-                console.error(`No such test file ${testFile}`);
-                Deno.exit(3);
-            } else if (err instanceof Error && err.name == 'IsADirectory') {
-                console.error(`${testFile} is a directory: please pass one or more files to test.`);
-                Deno.exit(3);
-            } else {
-                console.error(
-                    `Encountered an unexpected error when reading the test file "${testFile}".\n` +
-                        "Make sure that the file exists and is an actual file.\n"
-                )
-                Deno.exit(3);
-            }
         }
 
         const [passed, counts, failures] = specification.runTests(references);
@@ -210,6 +193,42 @@ function loadCSLReferenceFiles(files: string[]): CSL.Data[] {
         }
     }
     return references;
+}
+
+/**
+ * Load test files as TestSpecification.
+ *
+ * @param testFiles Array containing the paths to the test files to load.
+ * @returns An object mapping test file paths to TestSpecification objects.
+ * */
+function loadTestSpecifications(testFiles: string[]) {
+    const testSpecifications: Record<string, TestSpecification> = {};
+    for (const testFile of testFiles) {
+        const specification = new TestSpecification();
+        try {
+            specification.loadFromFile(testFile);
+            if (!specification.valid) {
+                for (const err of specification.errors) {
+                    console.error(err);
+                }
+                throw new StopProcessError();
+            }
+            testSpecifications[testFile] = specification;
+        } catch(err) {
+            if (err instanceof Error && err.name == 'NotFound') {
+                console.error(`No such test file ${testFile}`);
+            } else if (err instanceof Error && err.name == 'IsADirectory') {
+                console.error(`${testFile} is a directory: please pass one or more files to test.`);
+            } else {
+                console.error(
+                    `Encountered an unexpected error when reading the test file "${testFile}".\n` +
+                        "Make sure that the file exists and is an actual file.\n"
+                )
+            }
+            throw new StopProcessError();
+        }
+    }
+    return testSpecifications;
 }
 
 class StopProcessError extends Error {}
