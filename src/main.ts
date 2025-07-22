@@ -7,8 +7,7 @@ import { walk } from 'jsr:@std/fs/walk';
 
 import type * as CSL from './csl.ts';
 
-import { runOneTestSpecification } from './testRunners.ts';
-import { validateTestSpecification } from './specification.ts';
+import { TestSpecification } from './specification.ts';
 import { diffWithColors } from './utils.ts';
 import metadata from '../deno.json' with { type: 'json' };
 
@@ -97,39 +96,25 @@ export async function testingCommand(
             spinner.start();
         }
 
-        let spec: unknown;
+        const specification = new TestSpecification();
         try {
-            spec = yaml.parse(await Deno.readTextFile(testFile), {schema: 'failsafe'});
-            if (spec === null || typeof spec != 'object') {
-                throw new SyntaxError();
-            }
-            const [valid, errors] = validateTestSpecification(spec);
-            if (!valid) {
-                for (const err of errors) {
-                    console.error(
-                        colors.bold(`Error encountered when loading file ${testFile}: `)
-                            + err
-                    )
+            specification.loadFromFile(testFile);
+            if (!specification.valid) {
+                for (const err of specification.errors) {
+                    console.error(err);
                 }
-                Deno.exit(3);
+                Deno.exit(3)
             }
         } catch(err) {
             if (err instanceof Error && err.name == 'NotFound') {
                 console.error(`No such test file ${testFile}`);
-                Deno.exit(3);
-            } else if (err instanceof SyntaxError) {
-                console.error(
-                    colors.bold(`Error encountered when loading file ${testFile}. Check that the\n` +
-                                'contents follow the guidelines for test files.\n\n') +
-                        `The error was:\n ${err.message}`
-                );
                 Deno.exit(3);
             } else {
                 throw err;
             }
         }
 
-        const [passed, counts, failures] = runOneTestSpecification(spec, references);
+        const [passed, counts, failures] = specification.runTests(references);
 
         const checkMark = passed ? colors.green('✔') : colors.red('✘');
         if (verbose || (!quiet && failures.length)) {
