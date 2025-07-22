@@ -6,7 +6,7 @@ import { walk } from 'jsr:@std/fs/walk';
 
 import type * as CSL from './csl.ts';
 
-import { TestSpecification } from './specification.ts';
+import { TestSpecification, type TestResultSummary } from './specification.ts';
 import { diffWithColors, expandFileArguments } from './utils.ts';
 import metadata from '../deno.json' with { type: 'json' };
 
@@ -91,64 +91,20 @@ export async function testingCommand(
         return;
     }
 
-    const quiet = Boolean(options.quiet);
-    const verbose = (!quiet && options.verbose) ? true : false;
-    const spinner = new Spinner({ message: 'Running tests…' });
-
-    const passes = [];
+    const passes: boolean[] = [];
     for (const [testFile, specification] of Object.entries(testSpecifications)) {
-        if (!quiet) {
-            spinner.start();
-        }
-
-        const [passed, counts, failures] = specification.runTests(references);
-
-        const checkMark = passed ? colors.green('✔') : colors.red('✘');
-        if (verbose || (!quiet && failures.length)) {
-            spinner.stop();
-            console.log(` ${checkMark} ${testFile}`);
-        }
-        if (verbose) {
-            spinner.stop();
-            let message = '';
-            message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a+b)} citation checks passed;`;
-            message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a+b)} bibliography checks passed.`;
-            console.log(`   ${message}`);
-        }
-
-        if (!quiet) {
-            for (const fail of failures) {
-                if (fail.type == 'error') {
-                    console.log(`   - ${colors.brightRed('error')}: ${fail.error.replace(/\n/g, '\n     ')}`);
-                } else if (fail.type == 'citation') {
-                    const [expected, actual] = diffWithColors(fail.expected, fail.actual);
-                    console.log(`   - expected citation:\n     ${expected}`);
-                    console.log(`     but output was:\n     ${actual}`);
-                } else if (fail.type == 'bibliography') {
-                    const [expected, actual] = diffWithColors(fail.expected, fail.actual);
-                    console.log('   - expected following bibliography:');
-                    console.log(expected.replace(/^- /gm, '      - '));
-                    console.log('     but output was:');
-                    console.log(actual.replace(/^- /gm, '      - '));
-                }
-            }
-        }
-        if (verbose || (!quiet && failures.length)) {
-            console.log('');
-        }
-        if (!passed && options.bail) {
-            if (verbose) {
-                console.log(colors.red('Stopped after first failed test encountered.'));
-            }
-            Deno.exit(2);
-        }
+        const results = specification.runTests(references);
+        reportResults(testFile, results, options);
+        const passed = results[0];
         passes.push(passed);
+        if (!passed && options.bail) {
+            break;
+        }
     }
 
-    spinner.stop();
     const allPassed = !passes.includes(false);
 
-    if (!quiet) {
+    if (!options.quiet) {
         const checkMark = allPassed ? colors.green('✔') : colors.red('✘');
         const numPassed = passes.filter((passed) => passed).length;
         console.log(`${checkMark} Ran ${passes.length} test files, ${numPassed} passed`);
@@ -159,6 +115,8 @@ export async function testingCommand(
 
 //////////
 // Helper functions
+
+class StopProcessError extends Error {}
 
 /**
  * Load CSL-JSON files.
@@ -231,4 +189,57 @@ function loadTestSpecifications(testFiles: string[]) {
     return testSpecifications;
 }
 
-class StopProcessError extends Error {}
+/**
+ * Log to the console the results from running one test specification.
+ *
+ * @param testFile The name of the file specifying the tests that were run.
+ * @param results The results from running the test specification.
+ * @param options Options defining how much to display.
+ * */
+function reportResults(
+    testFile: string,
+    results: TestResultSummary,
+    options: TestingCmdOptions
+) {
+    const quiet = Boolean(options.quiet);
+    if (quiet) {
+        return;
+    }
+    const verbose = (!quiet && options.verbose) ? true : false;
+
+    const [passed, counts, failures] = results;
+
+    const checkMark = passed ? colors.green('✔') : colors.red('✘');
+    if (verbose || failures.length) {
+        console.log(` ${checkMark} ${testFile}`);
+    }
+    if (verbose) {
+        let message = '';
+        message += `${counts.citations[0]}/${counts.citations.reduce((a, b) => a + b)} citation checks passed;`;
+        message += ` ${counts.bibliography[0]}/${counts.bibliography.reduce((a, b) => a + b)} bibliography checks passed.`;
+        console.log(`   ${message}`);
+    }
+
+    for (const fail of failures) {
+        if (fail.type == 'error') {
+            console.log(`   - ${colors.brightRed('error')}: ${fail.error.replace(/\n/g, '\n     ')}`);
+        } else if (fail.type == 'citation') {
+            const [expected, actual] = diffWithColors(fail.expected, fail.actual);
+            console.log(`   - expected citation:\n     ${expected}`);
+            console.log(`     but output was:\n     ${actual}`);
+        } else if (fail.type == 'bibliography') {
+            const [expected, actual] = diffWithColors(fail.expected, fail.actual);
+            console.log('   - expected following bibliography:');
+            console.log(expected.replace(/^- /gm, '      - '));
+            console.log('     but output was:');
+            console.log(actual.replace(/^- /gm, '      - '));
+        }
+    }
+
+    if (verbose || failures.length) {
+        console.log('');
+    }
+    if (!passed && options.bail) {
+        console.log(colors.red('Stopped after first failed test encountered.'));
+    }
+}
