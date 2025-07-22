@@ -108,8 +108,15 @@ export async function testingCommand(
             if (err instanceof Error && err.name == 'NotFound') {
                 console.error(`No such test file ${testFile}`);
                 Deno.exit(3);
+            } else if (err instanceof Error && err.name == 'IsADirectory') {
+                console.error(`${testFile} is a directory: please pass one or more files to test.`);
+                Deno.exit(3);
             } else {
-                throw err;
+                console.error(
+                    `Encountered an unexpected error when reading the test file "${testFile}".\n` +
+                        "Make sure that the file exists and is an actual file.\n"
+                )
+                Deno.exit(3);
             }
         }
 
