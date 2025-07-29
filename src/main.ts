@@ -13,6 +13,10 @@ import metadata from "../deno.json" with { type: "json" };
 // Define the commands available on the command line
 
 if (import.meta.main) {
+  if (!Deno.stdout.isTerminal()) {
+    colors.setColorEnabled(false);
+  }
+
   const program = new Command();
   program
     .name("modish")
