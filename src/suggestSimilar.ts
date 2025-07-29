@@ -8,8 +8,9 @@ function editDistance(a: string, b: string) {
   // (Simple implementation.)
 
   // Quick early exit, return worst case.
-  if (Math.abs(a.length - b.length) > maxDistance)
+  if (Math.abs(a.length - b.length) > maxDistance) {
     return Math.max(a.length, b.length);
+  }
 
   // distance between prefix substrings of a and b
   const d: number[][] = [];
