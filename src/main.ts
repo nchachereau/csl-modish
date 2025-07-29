@@ -76,7 +76,7 @@ export async function testingCommand(
   }
   let references: CSL.Data[];
   try {
-    references = loadCSLReferenceFiles(referenceFiles);
+    references = await loadCSLReferenceFiles(referenceFiles);
   } catch (_err) {
     Deno.exitCode = 3;
     return;
@@ -84,7 +84,7 @@ export async function testingCommand(
 
   let testSpecifications: Record<string, TestSpecification>;
   try {
-    testSpecifications = loadTestSpecifications(testFiles);
+    testSpecifications = await loadTestSpecifications(testFiles);
   } catch (_err) {
     Deno.exitCode = 3;
     return;
@@ -125,14 +125,19 @@ class StopProcessError extends Error {}
  * @param files An array of the paths of the files to load.
  * @returns An array containing all items loaded from the CSL-JSON files.
  */
-function loadCSLReferenceFiles(files: string[]): CSL.Data[] {
+async function loadCSLReferenceFiles(files: string[]): Promise<CSL.Data[]> {
   const references: CSL.Data[] = [];
-  for (const file of files) {
+
+  const texts = await Promise.all(files.map((file) => Deno.readTextFile(file)));
+
+  for (let i = 0; i < texts.length; i++) {
     try {
-      references.push(...JSON.parse(Deno.readTextFileSync(file)));
+      references.push(...JSON.parse(texts[i]));
     } catch (err) {
       const errorMessage =
-        `Could not parse CSL-JSON reference file "${file}". You may need to\n` +
+        `Could not parse CSL-JSON reference file "${
+          files[i]
+        }". You may need to\n` +
         "  export it again from your reference management software (e.g. Zotero).\n";
       if (err instanceof SyntaxError) {
         console.error(
@@ -160,19 +165,19 @@ function loadCSLReferenceFiles(files: string[]): CSL.Data[] {
  * @param testFiles Array containing the paths to the test files to load.
  * @returns An object mapping test file paths to TestSpecification objects.
  */
-function loadTestSpecifications(testFiles: string[]) {
+async function loadTestSpecifications(testFiles: string[]) {
   const testSpecifications: Record<string, TestSpecification> = {};
-  for (const testFile of testFiles) {
+
+  const loadedSpecifications = testFiles.map(async function(testFile): Promise<[string, TestSpecification]> {
     const specification = new TestSpecification();
     try {
-      specification.loadFromFile(testFile);
+      await specification.loadFromFile(testFile);
       if (!specification.valid) {
         for (const err of specification.errors) {
           console.error(err);
         }
         throw new StopProcessError();
       }
-      testSpecifications[testFile] = specification;
     } catch (err) {
       if (err instanceof Error && err.name == "NotFound") {
         console.error(`No such test file ${testFile}`);
@@ -188,6 +193,11 @@ function loadTestSpecifications(testFiles: string[]) {
       }
       throw new StopProcessError();
     }
+    return [testFile, specification];
+  });
+
+  for (const [testFile, specification] of await Promise.all(loadedSpecifications)) {
+    testSpecifications[testFile] = specification;
   }
   return testSpecifications;
 }

@@ -149,10 +149,10 @@ export class TestSpecification {
    *
    * @param specificationFile Path to the test file to load.
    */
-  loadFromFile(specificationFile: string) {
+  async loadFromFile(specificationFile: string) {
     try {
       const spec = yaml.parse(
-        Deno.readTextFileSync(specificationFile),
+        await Deno.readTextFile(specificationFile),
         { schema: "failsafe" },
       );
       if (spec === null || typeof spec != "object") {
