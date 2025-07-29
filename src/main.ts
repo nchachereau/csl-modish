@@ -1,6 +1,5 @@
 import { Command } from 'commander';
 import * as colors from 'jsr:@std/fmt/colors';
-import { Spinner } from 'jsr:@std/cli/unstable-spinner';
 
 import { walk } from 'jsr:@std/fs/walk';
 
@@ -78,7 +77,7 @@ export async function testingCommand(
     let references: CSL.Data[];
     try {
         references = loadCSLReferenceFiles(referenceFiles);
-    } catch (err) {
+    } catch (_err) {
         Deno.exitCode = 3;
         return;
     }
@@ -86,7 +85,7 @@ export async function testingCommand(
     let testSpecifications: Record<string, TestSpecification>;
     try {
         testSpecifications = loadTestSpecifications(testFiles);
-    } catch (err) {
+    } catch (_err) {
         Deno.exitCode = 3;
         return;
     }
