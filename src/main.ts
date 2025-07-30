@@ -81,17 +81,27 @@ export async function testingCommand(
   let references: CSL.Data[];
   try {
     references = await loadCSLReferenceFiles(referenceFiles);
-  } catch (_err) {
-    Deno.exitCode = 3;
-    return;
+  } catch (err) {
+    if (err instanceof StopProcessError) {
+      Deno.exitCode = 3;
+      return;
+    } else {
+      printCallForBugReport();
+      throw err;
+    }
   }
 
   let testSpecifications: Record<string, TestSpecification>;
   try {
     testSpecifications = await loadTestSpecifications(testFiles);
-  } catch (_err) {
-    Deno.exitCode = 3;
-    return;
+  } catch (err) {
+    if (err instanceof StopProcessError) {
+      Deno.exitCode = 3;
+      return;
+    } else {
+      printCallForBugReport();
+      throw err;
+    }
   }
 
   const passes: boolean[] = [];
@@ -267,4 +277,14 @@ function reportResults(
   if (!passed && options.bail) {
     console.log(colors.red("Stopped after first failed test encountered."));
   }
+}
+
+function printCallForBugReport() {
+  console.error(
+    colors.bold(colors.red("Failure:")),
+    "could not deal with an unexpected situation. We would be very grateful\n" +
+    " if you could report this error as a bug:\n " +
+    colors.blue("https://github.com/nchachereau/csl-modish/issues"),
+    "\n"
+  )
 }
