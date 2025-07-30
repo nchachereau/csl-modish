@@ -1,4 +1,4 @@
-import { describe, it } from "jsr:@std/testing/bdd";
+import { describe, it, beforeEach } from "jsr:@std/testing/bdd";
 import {
   assertSpyCall,
   assertSpyCalls,
@@ -9,7 +9,7 @@ import {
 import { expect } from "jsr:@std/expect";
 
 import { TestSpecification } from "../src/specification.ts";
-import { Bibliographer, UnregisteredItemError } from "../src/bibliographer.ts";
+import { Bibliographer, UnregisteredItemError, resetBibliographerCache } from "../src/bibliographer.ts";
 
 describe("TestSpecification validation", () => {
   it("validates a valid test specification", () => {
@@ -257,6 +257,10 @@ describe("TestSpecification validation", () => {
 });
 
 describe("runTests()", () => {
+  beforeEach(() => {
+    resetBibliographerCache();
+  });
+
   it("registers items to cite", () => {
     const items = [
       {

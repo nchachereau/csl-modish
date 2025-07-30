@@ -338,7 +338,7 @@ export class Bibliographer {
   }
 }
 
-const bibliographers: Record<string, Record<string, Bibliographer>> = {};
+let bibliographers: Record<string, Record<string, Bibliographer>> = {};
 
 /**
  * Return a {@linkcode Bibliographer} instance for a style and language.
@@ -368,4 +368,17 @@ export function getBibliographer(
   bibliographers[style] ??= {};
   bibliographers[style][language] = bibliographer;
   return bibliographer;
+}
+
+/**
+ * Reset the cache used by {@linkcode getBibliographer}.
+ *
+ * @param style If specified, only reset the instances for this style.
+ */
+export function resetBibliographerCache(style: string | undefined) {
+  if (style !== undefined) {
+    delete bibliographers[style];
+  } else {
+    bibliographers = {};
+  }
 }
