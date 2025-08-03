@@ -16,7 +16,10 @@ import metadata from "../deno.json" with { type: "json" };
 // Define the commands available on the command line
 
 if (import.meta.main) {
-  if (!Deno.stdout.isTerminal()) {
+  if (
+    !Deno.stdout.isTerminal() && !Deno.env.get("FORCE_COLOR") &&
+    !Deno.env.get("CLICOLOR_FORCE")
+  ) {
     colors.setColorEnabled(false);
   }
 
