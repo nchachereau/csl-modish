@@ -149,6 +149,14 @@ export async function testingCommand(
     return;
   }
 
+  if (options.quiet) {
+    console.error(
+      colors.red("Warning:"),
+      "--watch option is incompatible with --quiet",
+    );
+    return;
+  }
+
   console.log(colors.blue("\nWaiting for changes…"));
   while (true) {
     // We wrap the file watcher in this infinite loop so that we can adapt the
