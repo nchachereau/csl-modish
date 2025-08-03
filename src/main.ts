@@ -102,7 +102,7 @@ export async function testingCommand(
   toWatch = toWatch.union(new Set([...testFiles]));
 
   const refFiles = await Array.fromAsync(walk("tests/", { exts: [".json"] }));
-  const referenceFiles = refFiles.map((f) => realPathSync(f.path));
+  const referenceFiles = refFiles.map((f) => realPathSync(f.path)).sort();
   if (referenceFiles.length == 0) {
     console.error(
       colors.red("Error:"),
