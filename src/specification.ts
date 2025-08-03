@@ -137,6 +137,21 @@ export class TestSpecification {
   /** List of validation errors when the specification is invalid. */
   errors: string[];
 
+  /** Array of styles used in the tests, as specified. */
+  get styles(): string[] {
+    const styles = new Set<string>();
+    // if `tests` is not specified, assume that there is only one global test
+    const tests = this._specification.tests ?? [this._specification];
+    for (const testCase of tests) {
+      // if the test case does not specify the style, use the globally defined style
+      const style = testCase.style ?? this._specification.style;
+      if (style !== undefined) {
+        styles.add(style);
+      }
+    }
+    return Array.from(styles);
+  }
+
   /** Construct a new instance. */
   constructor() {
     this.valid = false;

@@ -2,6 +2,7 @@ import type * as CSL from "./csl.ts";
 // @ts-types="./citeproc.d.ts"
 import citeproc from "citeproc";
 import * as path from "jsr:@std/path";
+import { realPathSync } from "jsr:@std/fs/unstable-real-path";
 
 /** Objects passed to the citeproc citation engine. */
 export interface CiteItem {
@@ -365,8 +366,9 @@ export function getBibliographer(
 
   const bibliographer = new Bibliographer();
   bibliographer.loadStyle(style, lang);
-  bibliographers[style] ??= {};
-  bibliographers[style][language] = bibliographer;
+  const styleRealPath = realPathSync(style);
+  bibliographers[styleRealPath] ??= {};
+  bibliographers[styleRealPath][language] = bibliographer;
   return bibliographer;
 }
 
@@ -377,8 +379,21 @@ export function getBibliographer(
  */
 export function resetBibliographerCache(style: string | undefined) {
   if (style !== undefined) {
+    if (!path.isAbsolute(style)) {
+      try {
+        style = realPathSync(style);
+      } catch (err) {
+        if (err instanceof Error && err.name == "NotFound") {
+          // ignore
+          console.log(style);
+        } else {
+          throw err;
+        }
+      }
+    }
     delete bibliographers[style];
   } else {
     bibliographers = {};
   }
+  return true;
 }

@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from "jsr:@std/testing/bdd";
+import { beforeEach, describe, it } from "jsr:@std/testing/bdd";
 import {
   assertSpyCall,
   assertSpyCalls,
@@ -9,7 +9,11 @@ import {
 import { expect } from "jsr:@std/expect";
 
 import { TestSpecification } from "../src/specification.ts";
-import { Bibliographer, UnregisteredItemError, resetBibliographerCache } from "../src/bibliographer.ts";
+import {
+  Bibliographer,
+  resetBibliographerCache,
+  UnregisteredItemError,
+} from "../src/bibliographer.ts";
 
 describe("TestSpecification validation", () => {
   it("validates a valid test specification", () => {
@@ -256,6 +260,47 @@ describe("TestSpecification validation", () => {
   });
 });
 
+describe("styles property", () => {
+  it("is empty when the spec is invalid", () => {
+    const spec = { style: "minimal.csl", invalid: "de_CH" };
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    expect(ts.styles).toMatchObject([]);
+  });
+
+  it("returns the global style", () => {
+    const spec = {
+      style: "minimal.csl",
+      input: ["Test"],
+      citations: ["Tester (2024): Test"],
+    };
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    expect(ts.styles).toMatchObject(["minimal.csl"]);
+  });
+
+  it("returns the styles used in the specific tests", () => {
+    const spec = {
+      style: "global.csl",
+      tests: [
+        {
+          input: ["Test"],
+          citations: ["Tester (2024): Test"],
+          style: "style1.csl",
+        },
+        {
+          input: ["Test"],
+          citations: ["Tester (2024): Test"],
+          style: "style2.csl",
+        },
+      ],
+    };
+    const ts = new TestSpecification();
+    ts.loadFromObject(spec);
+    expect(ts.styles).toMatchObject(["style1.csl", "style2.csl"]);
+  });
+});
+
 describe("runTests()", () => {
   beforeEach(() => {
     resetBibliographerCache();
@@ -287,7 +332,7 @@ describe("runTests()", () => {
       Bibliographer.prototype,
       "registerItems",
     );
-    const _spec = { input: [], style: "test.csl" };
+    const _spec = { input: [], style: "test/minimal.csl" };
 
     try {
       const spec = new TestSpecification();
@@ -322,7 +367,7 @@ describe("runTests()", () => {
       ]),
     );
     const _spec = {
-      style: "style.csl",
+      style: "test/minimal.csl",
       input: input,
       citations: citations,
     };
@@ -368,7 +413,7 @@ describe("runTests()", () => {
       ]),
     );
     const _spec = {
-      style: "style.csl",
+      style: "test/minimal.csl",
       input: input,
       citations: citations,
     };
@@ -421,7 +466,7 @@ describe("runTests()", () => {
       ]),
     );
     const _spec = {
-      style: "style.csl",
+      style: "test/minimal.csl",
       input: input,
       bibliography: bibliography,
     };
@@ -470,7 +515,7 @@ describe("runTests()", () => {
       ]),
     );
     const _spec = {
-      style: "style.csl",
+      style: "test/minimal.csl",
       input: input,
       bibliography: bibliography,
     };
@@ -498,7 +543,7 @@ describe("runTests()", () => {
 
   it("reports failure if no inputs are specified", () => {
     const citations = ["Smith 2024.", "Doe 1990."];
-    const _spec = { style: "style.csl", citations: citations };
+    const _spec = { style: "test/minimal.csl", citations: citations };
 
     const spec = new TestSpecification();
     spec.loadFromObject(_spec);
@@ -535,7 +580,7 @@ describe("runTests()", () => {
         ["Jane Doe, Book2, 1990", "John Smith, Book1, 2024."],
       ]),
     );
-    const _spec = { style: "style.csl", input: input };
+    const _spec = { style: "test/minimal.csl", input: input };
 
     let passed, _counts, failures;
     try {
@@ -563,7 +608,7 @@ describe("runTests()", () => {
       returnsNext([true]),
     );
     const input = [];
-    const _spec = { input: input, style: "test.csl" };
+    const _spec = { input: input, style: "test/minimal.csl" };
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
@@ -572,7 +617,7 @@ describe("runTests()", () => {
       bibliographerLoadStyleStub.restore();
     }
     assertSpyCall(bibliographerLoadStyleStub, 0, {
-      args: ["test.csl", undefined],
+      args: ["test/minimal.csl", undefined],
     });
   });
 
@@ -583,7 +628,7 @@ describe("runTests()", () => {
       returnsNext([true]),
     );
     const input = [];
-    const _spec = { input: input, style: "test.csl", lang: "de-CH" };
+    const _spec = { input: input, style: "test/minimal.csl", lang: "de-CH" };
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
@@ -592,7 +637,7 @@ describe("runTests()", () => {
       bibliographerLoadStyleStub.restore();
     }
     assertSpyCall(bibliographerLoadStyleStub, 0, {
-      args: ["test.csl", "de-CH"],
+      args: ["test/minimal.csl", "de-CH"],
     });
   });
 
@@ -633,7 +678,7 @@ describe("runTests()", () => {
       returnsNext([new UnregisteredItemError(input[0])]),
     );
     const _spec = {
-      style: "somestyle.csl",
+      style: "test/minimal.csl",
       input: input,
       citations: ["Smith 2012."],
     };
@@ -674,7 +719,7 @@ describe("runTests()", () => {
       ]),
     );
     const _spec = {
-      style: "style.csl",
+      style: "test/minimal.csl",
       input: globalInput,
       tests: [{ input: localInput, citations: citations }],
     };
@@ -703,7 +748,7 @@ describe("runTests()", () => {
   it("uses style defined in test case", () => {
     const input = ["Book1", "Book2"];
     const citations = ["Smith 2012.", "Smith 2015."];
-    const styleName = "test.csl";
+    const styleName = "test/minimal.csl";
     const bibliographerLoadStyleStub = stub(
       Bibliographer.prototype,
       "loadStyle",
@@ -745,7 +790,7 @@ describe("runTests()", () => {
   it("can use input defined globally", () => {
     const input = ["Book1", "Book2"];
     const citations = ["Smith 2012.", "Smith 2015."];
-    const styleName = "test.csl";
+    const styleName = "test/minimal.csl";
     const bibliographerLoadStyleStub = stub(
       Bibliographer.prototype,
       "loadStyle",
@@ -815,7 +860,7 @@ describe("runTests()", () => {
       ]),
     );
     const _spec = {
-      style: "style.csl",
+      style: "test/minimal.csl",
       bibliography: bibliography,
       tests: [{ input: input, citations: citations }],
     };
