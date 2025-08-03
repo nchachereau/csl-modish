@@ -31,7 +31,7 @@ if (import.meta.main) {
     .description("Run tests")
     .option("-b, --bail", "abort after first test failure")
     .option("-q, --quiet", "suppress all normal output")
-    .option("--verbose", "output status for each file")
+    .option("--verbose", "output results for all test files")
     .option("-w, --watch", "rerun tests when files change")
     .argument("[test-files...]")
     .action(testingCommand);
