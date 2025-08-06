@@ -66,7 +66,7 @@ The `modish test` command accepts the following arguments:
 - `--verbose`: Output results for all test files.
 - `-w, --watch`: Rerun tests when files change.
 
-## Bibliography File in CSL JSON
+## Bibliography Files in CSL JSON
 
 All `.json` files in the `tests` directory are expected to be in CSL JSON
 format. They stipulate the items (books, journal articles, etc.) for which the
