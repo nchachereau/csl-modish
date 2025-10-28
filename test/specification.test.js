@@ -879,4 +879,55 @@ describe("runTests()", () => {
     expect(passed).toBe(true);
     expect(failures).toHaveLength(0);
   });
+
+  it("stops after first failure when asked to do so", () => {
+    const input = ["Book1", "Book2"];
+    const citations = ["Smith 2012.", "Smith 2015."];
+    const bibliographerLoadStyleStub = stub(
+      Bibliographer.prototype,
+      "loadStyle",
+      returnsNext([true]),
+    );
+    const citeStub = stub(
+      Bibliographer.prototype,
+      "addCitation",
+      returnsNext([[], []]),
+    );
+    const getCitationsStub = stub(
+      Bibliographer.prototype,
+      "getCitations",
+      returnsNext([
+        ["Doe 2012."],
+        ["Doe 1995."],
+      ]),
+    );
+    const _spec = {
+      style: "test/minimal.csl",
+      tests: [
+        { input: [input[0]], citations: [citations[0]] },
+        { input: [input[1]], citations: [citations[1]] },
+      ]
+    };
+
+    let passed, counts, failures;
+    try {
+      const spec = new TestSpecification();
+      spec.loadFromObject(_spec);
+      // pass bail=true
+      [passed, counts, failures] = spec.runTests([], true);
+    } finally {
+      bibliographerLoadStyleStub.restore();
+      citeStub.restore();
+      getCitationsStub.restore();
+    }
+    expect(passed).toBe(false);
+    expect(counts.citations).toMatchObject([0, 1]);
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatchObject({
+      type: "citation",
+      expected: "Smith 2012.",
+      actual: "Doe 2012.",
+    });
+  });
+
 });

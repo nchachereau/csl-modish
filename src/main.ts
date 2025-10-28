@@ -487,7 +487,7 @@ function runAllTests(
   for (const [testFile, specification] of testSpecifications.entries()) {
     let referenceArray: CSL.Data[] = [];
     referenceArray = referenceArray.concat(...references.values());
-    const results = specification.runTests(referenceArray);
+    const results = specification.runTests(referenceArray, options.bail);
     reportResults(testFile, results, options);
     const passed = results[0];
     passes.push(passed);

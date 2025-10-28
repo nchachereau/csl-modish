@@ -399,9 +399,10 @@ export class TestSpecification {
    * Run the test(s) contained in the specification.
    *
    * @param items The items cited in the tests.
+   * @param bail Whether to stop after the first failed test.
    * @returns A summary of the test results.
    */
-  runTests(items: CSL.Data[]): TestResultSummary {
+  runTests(items: CSL.Data[], bail: boolean = false): TestResultSummary {
     // if `tests` is not specified, assume that there is only one global test
     const tests = this._specification.tests ?? [this._specification];
 
@@ -409,6 +410,10 @@ export class TestSpecification {
     const counts: TestResults = { citations: [0, 0], bibliography: [0, 0] };
     const failures: Failure[] = [];
     for (const testCase of tests) {
+      if (bail && failures.length > 0) {
+        break;
+      }
+
       // if the test case does not specify the input, use the global definition
       const inputs = testCase.input ?? this._specification.input;
       if (inputs === undefined) {
