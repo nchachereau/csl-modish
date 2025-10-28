@@ -372,20 +372,19 @@ describe("runTests()", () => {
       citations: citations,
     };
 
-    let passed, counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
     }
 
-    expect(passed).toBe(true);
+    expect(results).toMatchObject([true]);
     expect(failures).toHaveLength(0);
-    expect(counts.citations).toMatchObject([2, 0]);
     assertSpyCall(citeStub, 0, { args: ["Book1"] });
     assertSpyCall(citeStub, 1, { args: ["Book2"] });
     assertSpyCalls(citeStub, 2);
@@ -418,20 +417,20 @@ describe("runTests()", () => {
       citations: citations,
     };
 
-    let passed, counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
     }
-    expect(passed).toBe(false);
-    expect(counts.citations).toMatchObject([1, 1]);
+    expect(results).toMatchObject([false]);
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toMatchObject({
+    expect(failures[0]).toHaveLength(1);
+    expect(failures[0][0]).toMatchObject({
       type: "citation",
       expected: "Smith 2015.",
       actual: "Doe 1995.",
@@ -471,19 +470,18 @@ describe("runTests()", () => {
       bibliography: bibliography,
     };
 
-    let passed, counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
       getBibliographyStub.restore();
     }
-    expect(passed).toBe(true);
-    expect(counts.bibliography).toMatchObject([1, 0]);
+    expect(results).toMatchObject([true]);
     expect(failures).toHaveLength(0);
   });
 
@@ -520,21 +518,21 @@ describe("runTests()", () => {
       bibliography: bibliography,
     };
 
-    let passed, counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
       getBibliographyStub.restore();
     }
-    expect(passed).toBe(false);
-    expect(counts.bibliography).toMatchObject([0, 1]);
+    expect(results).toMatchObject([false]);
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toMatchObject({
+    expect(failures[0]).toHaveLength(1);
+    expect(failures[0][0]).toMatchObject({
       type: "bibliography",
       expected: "- Jane Doe, Book2, 1990.\n- John Smith, Book1, 2024.",
       actual: "- Wrong Name, Other Book, 1990.\n- John Smith, Book1, 2024.",
@@ -547,11 +545,11 @@ describe("runTests()", () => {
 
     const spec = new TestSpecification();
     spec.loadFromObject(_spec);
-    const [passed, _counts, failures] = spec.runTests([]);
+    const [results, failures] = spec.runTests([]);
 
-    expect(passed).toBe(false);
-    expect(failures[0].type).toEqual("error");
-    expect(failures[0].error).toMatch(/\binput\b/);
+    expect(results).toMatchObject([false]);
+    expect(failures[0][0].type).toEqual("error");
+    expect(failures[0][0].error).toMatch(/\binput\b/);
   });
 
   it("reports failure if neither citation nor bibliography are specified", () => {
@@ -582,19 +580,19 @@ describe("runTests()", () => {
     );
     const _spec = { style: "test/minimal.csl", input: input };
 
-    let passed, _counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, _counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
       getBibliographyStub.restore();
     }
-    expect(passed).toBe(false);
-    expect(failures[0]).toMatchObject({
+    expect(results).toMatchObject([false]);
+    expect(failures[0][0]).toMatchObject({
       type: "error",
       error:
         "Please specify expected output (citations and/or bibliography) in your test(s).",
@@ -652,16 +650,16 @@ describe("runTests()", () => {
       input: ["Book1"],
       citations: ["Smith 2012."],
     };
-    let passed, _counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, _counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       citeStub.restore();
     }
-    expect(passed).toBe(false);
-    expect(failures[0]).toHaveProperty("error");
+    expect(results).toMatchObject([false]);
+    expect(failures[0][0]).toHaveProperty("error");
     assertSpyCalls(citeStub, 0);
   });
 
@@ -683,66 +681,74 @@ describe("runTests()", () => {
       citations: ["Smith 2012."],
     };
 
-    let passed, _counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, _counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
     }
-    expect(passed).toBe(false);
-    expect(failures[0]).toHaveProperty("error");
-    expect(failures[0].error).toEqual(expect.stringContaining(input[0]));
+    expect(results).toMatchObject([false]);
+    expect(failures[0][0]).toHaveProperty("error");
+    expect(failures[0][0].error).toEqual(expect.stringContaining(input[0]));
   });
 
   it("supports series of tests", () => {
-    const localInput = ["Book1", "Book2"];
+    const localInput1 = ["Book1", "Book2"];
+    const localInput2 = ["Book3"];
     const globalInput = ["Wrong1"];
-    const citations = ["Smith 2012.", "Smith 2015."];
+    const citations1 = ["Smith 2012.", "Smith 2015."];
+    const citations2 = ["Doe 1995."]
     const bibliographerLoadStyleStub = stub(
       Bibliographer.prototype,
       "loadStyle",
-      returnsNext([true]),
+      returnsNext([true, true]),
     );
     const citeStub = stub(
       Bibliographer.prototype,
       "addCitation",
-      returnsNext([[], []]),
+      returnsNext([[], [], []]),
     );
     const getCitationsStub = stub(
       Bibliographer.prototype,
       "getCitations",
       returnsNext([
         ["Smith 2012.", "Doe 1995."],
+        ["Doe 1995."]
       ]),
     );
     const _spec = {
       style: "test/minimal.csl",
       input: globalInput,
-      tests: [{ input: localInput, citations: citations }],
+      tests: [
+        { input: localInput1, citations: citations1 },
+        { input: localInput2, citations: citations2 },
+      ],
     };
 
-    let passed, _counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, _counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
     }
-    expect(passed).toBe(false);
+    expect(results).toMatchObject([false, true]);
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toMatchObject({
+    expect(failures[0]).toHaveLength(1);
+    expect(failures[0][0]).toMatchObject({
       type: "citation",
       expected: "Smith 2015.",
       actual: "Doe 1995.",
     });
     assertSpyCall(citeStub, 0, { args: ["Book1"] });
     assertSpyCall(citeStub, 1, { args: ["Book2"] });
+    assertSpyCall(citeStub, 2, { args: ["Book3"] });
   });
 
   it("uses style defined in test case", () => {
@@ -770,17 +776,17 @@ describe("runTests()", () => {
       tests: [{ style: styleName, input: input, citations: citations }],
     };
 
-    let passed, _counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, _counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
     }
-    expect(passed).toBe(true);
+    expect(results).toMatchObject([true]);
     expect(failures).toHaveLength(0);
     assertSpyCall(bibliographerLoadStyleStub, 0, {
       args: [styleName, undefined],
@@ -815,17 +821,17 @@ describe("runTests()", () => {
       ],
     };
 
-    let passed, _counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, _counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
     }
-    expect(passed).toBe(true);
+    expect(results).toMatchObject([true]);
     expect(failures).toHaveLength(0);
     assertSpyCall(citeStub, 0, { args: ["Book1"] });
     assertSpyCall(citeStub, 1, { args: ["Book2"] });
@@ -865,18 +871,18 @@ describe("runTests()", () => {
       tests: [{ input: input, citations: citations }],
     };
 
-    let passed, _counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [passed, _counts, failures] = spec.runTests([]);
+      [results, failures] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
       getBibliographyStub.restore();
     }
-    expect(passed).toBe(true);
+    expect(results).toMatchObject([true]);
     expect(failures).toHaveLength(0);
   });
 
@@ -909,21 +915,21 @@ describe("runTests()", () => {
       ]
     };
 
-    let passed, counts, failures;
+    let results, failures;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
       // pass bail=true
-      [passed, counts, failures] = spec.runTests([], true);
+      [results, failures] = spec.runTests([], true);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
       getCitationsStub.restore();
     }
-    expect(passed).toBe(false);
-    expect(counts.citations).toMatchObject([0, 1]);
+    expect(results).toMatchObject([false]);
     expect(failures).toHaveLength(1);
-    expect(failures[0]).toMatchObject({
+    expect(failures[0]).toHaveLength(1);
+    expect(failures[0][0]).toMatchObject({
       type: "citation",
       expected: "Smith 2012.",
       actual: "Doe 2012.",

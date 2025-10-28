@@ -57,16 +57,11 @@ export interface BibliographyFailure {
 /** Details concerning a test failure */
 export type Failure = ErrorFailure | CitationFailure | BibliographyFailure;
 
-/** Number of passed and failed tests. */
-export interface TestResults {
-  /** Number of passed and failed citations. */
-  citations: [passed: number, failed: number];
-  /** Number of passed and failed bibliographies. */
-  bibliography: [passed: number, failed: number];
-}
+/** List of results from all tests in one specification. */
+export type TestResults = boolean[];
 
 /** Results from running one test specification. */
-export type TestResultSummary = [boolean, TestResults, Failure[]];
+export type TestResultSummary = [TestResults, Failure[][]];
 
 function makeOrdinal(n: number): string {
   // we assume that n < 111
@@ -406,9 +401,8 @@ export class TestSpecification {
     // if `tests` is not specified, assume that there is only one global test
     const tests = this._specification.tests ?? [this._specification];
 
-    let passed = false;
-    const counts: TestResults = { citations: [0, 0], bibliography: [0, 0] };
-    const failures: Failure[] = [];
+    const results: TestResults = [];
+    const failures: Failure[][] = [];
     for (const testCase of tests) {
       if (bail && failures.length > 0) {
         break;
@@ -417,21 +411,23 @@ export class TestSpecification {
       // if the test case does not specify the input, use the global definition
       const inputs = testCase.input ?? this._specification.input;
       if (inputs === undefined) {
-        failures.push({
+        results.push(false);
+        failures.push([{
           type: "error",
           error:
             "Please specify `input`, the list of references to be formatted.",
-        });
+        }]);
         continue;
       }
       // if the test case does not specify the style, use the globally defined style
       const style = testCase.style ?? this._specification.style;
       const lang = testCase.lang ?? this._specification.lang;
       if (style === undefined) {
-        failures.push({
+        results.push(false);
+        failures.push([{
           type: "error",
           error: "Please specify the path of the CSL style to test.",
-        });
+        }]);
         continue;
       }
       let bibliographer: Bibliographer;
@@ -439,10 +435,11 @@ export class TestSpecification {
         bibliographer = getBibliographer(style, lang);
       } catch (err) {
         if (err instanceof Error && err.name == "NotFound") {
-          failures.push({
+          results.push(false);
+          failures.push([{
             type: "error",
             error: err.message,
-          });
+          }]);
           continue;
         } else {
           throw err;
@@ -455,20 +452,22 @@ export class TestSpecification {
       const expectedBiblio = testCase.bibliography;
 
       if (expectedCitations === undefined && expectedBiblio === undefined) {
-        failures.push({
+        results.push(false);
+        failures.push([{
           type: "error",
           error:
             "Please specify expected output (citations and/or bibliography) in your test(s).",
-        });
+        }]);
         continue;
       }
 
+      const testCaseFailures: Failure[] = [];
       for (const input of inputs) {
         try {
           bibliographer.addCitation(input);
         } catch (err) {
           if (err instanceof UnregisteredItemError) {
-            failures.push({
+            testCaseFailures.push({
               type: "error",
               error:
                 `No reference ${err.erroneousIdentifier} was found in your CSL-JSON files.`,
@@ -485,19 +484,16 @@ export class TestSpecification {
           const expected = expectedCitations[i];
           if (expected === undefined) {
             unmatchedCitations.push(outputCitation);
-          } else if (outputCitation == expected) {
-            counts.citations[0]++;
-          } else {
-            failures.push({
+          } else if (outputCitation != expected) {
+            testCaseFailures.push({
               type: "citation",
               expected: expected,
               actual: outputCitation,
             });
-            counts.citations[1]++;
           }
         }
         if (unmatchedCitations.length) {
-          failures.push({
+          testCaseFailures.push({
             type: "error",
             error:
               `Please specify all expected outputs in your test for style ${style}.\n` +
@@ -514,20 +510,22 @@ export class TestSpecification {
           expectedBiblio.length !== outputBibliography.length ||
           !(outputBibliography.every((val, i) => val === expectedBiblio[i]))
         ) {
-          counts.bibliography[1]++;
           const expectedStr = expectedBiblio.map((s) => `- ${s}`).join("\n");
           const outputStr = outputBibliography.map((s) => `- ${s}`).join("\n");
-          failures.push({
+          testCaseFailures.push({
             type: "bibliography",
             expected: expectedStr,
             actual: outputStr,
           });
-        } else {
-          counts.bibliography[0]++;
         }
       }
+      if (testCaseFailures.length) {
+        results.push(false);
+        failures.push(testCaseFailures);
+      } else {
+        results.push(true);
+      }
     }
-    passed = (failures.length == 0) ? true : false;
-    return [passed, counts, failures];
+    return [results, failures];
   }
 }

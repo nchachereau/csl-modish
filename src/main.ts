@@ -402,7 +402,7 @@ function getStyleFiles(testSpecifications: Map<string, TestSpecification>) {
  */
 function reportResults(
   testFile: string,
-  results: TestResultSummary,
+  resultSummary: TestResultSummary,
   options: TestingCommandOptions,
 ) {
   const quiet = Boolean(options.quiet);
@@ -411,47 +411,49 @@ function reportResults(
   }
   const verbose = (!quiet && options.verbose) ? true : false;
 
-  const [passed, counts, failures] = results;
+  const [results, failures] = resultSummary;
 
-  const checkMark = passed ? colors.green("✔") : colors.red("✘");
+  const checkMark = results.every(Boolean) ? colors.green("✔") : colors.red("✘");
   if (verbose || failures.length) {
     console.log(` ${checkMark} ${testFile}`);
   }
   if (verbose) {
-    let message = "";
-    message += `${counts.citations[0]}/${
-      counts.citations.reduce((a, b) => a + b)
-    } citation checks passed;`;
-    message += ` ${counts.bibliography[0]}/${
-      counts.bibliography.reduce((a, b) => a + b)
-    } bibliography checks passed.`;
-    console.log(`   ${message}`);
+    const ran = results.length;
+    const passed = results.filter(Boolean).length;
+    console.log(`   ${passed}/${ran} tests passed`);
   }
 
-  for (const fail of failures) {
-    if (fail.type == "error") {
-      console.log(
-        `   - ${colors.brightRed("error")}: ${
-          fail.error.replace(/\n/g, "\n     ")
-        }`,
-      );
-    } else if (fail.type == "citation") {
-      const [expected, actual] = diffWithColors(fail.expected, fail.actual);
-      console.log(`   - expected citation:\n     ${expected}`);
-      console.log(`     but output was:\n     ${actual}`);
-    } else if (fail.type == "bibliography") {
-      const [expected, actual] = diffWithColors(fail.expected, fail.actual);
-      console.log("   - expected following bibliography:");
-      console.log(expected.replace(/^- /gm, "      - "));
-      console.log("     but output was:");
-      console.log(actual.replace(/^- /gm, "      - "));
+  let previousFailedTest = 0;
+  for (const failedTest of failures) {
+    const testIndex = results.indexOf(false, previousFailedTest);
+    const testNumber = testIndex+1;
+    previousFailedTest = testIndex+1;
+    console.log(`   Test ${testNumber} failed:`);
+
+    for (const failure of failedTest) {
+      if (failure.type == "error") {
+        console.log(
+          `   - ${colors.brightRed("error")}: ${failure.error.replace(/\n/g, "\n     ")
+          }`,
+        );
+      } else if (failure.type == "citation") {
+        const [expected, actual] = diffWithColors(failure.expected, failure.actual);
+        console.log(`   - expected citation:\n     ${expected}`);
+        console.log(`     but output was:\n     ${actual}`);
+      } else if (failure.type == "bibliography") {
+        const [expected, actual] = diffWithColors(failure.expected, failure.actual);
+        console.log("   - expected following bibliography:");
+        console.log(expected.replace(/^- /gm, "      - "));
+        console.log("     but output was:");
+        console.log(actual.replace(/^- /gm, "      - "));
+      }
     }
   }
 
   if (verbose || failures.length) {
     console.log("");
   }
-  if (!passed && options.bail) {
+  if (failures.length && options.bail) {
     console.log(colors.red("Stopped after first failed test encountered."));
   }
 }
@@ -487,11 +489,11 @@ function runAllTests(
   for (const [testFile, specification] of testSpecifications.entries()) {
     let referenceArray: CSL.Data[] = [];
     referenceArray = referenceArray.concat(...references.values());
-    const results = specification.runTests(referenceArray, options.bail);
-    reportResults(testFile, results, options);
-    const passed = results[0];
-    passes.push(passed);
-    if (!passed && options.bail) {
+    const resultSummary = specification.runTests(referenceArray, options.bail);
+    reportResults(testFile, resultSummary, options);
+    const passed = resultSummary[0];
+    passes.push(...passed);
+    if (passed.includes(false) && options.bail) {
       break;
     }
   }
@@ -500,9 +502,10 @@ function runAllTests(
 
   if (!options.quiet) {
     const checkMark = allPassed ? colors.green("✔") : colors.red("✘");
-    const numPassed = passes.filter((passed) => passed).length;
+    const numPassed = passes.filter(Boolean).length;
+    const numFiles = testSpecifications.size;
     console.log(
-      `${checkMark} Ran ${passes.length} test files, ${numPassed} passed`,
+      `${checkMark} Ran ${passes.length} tests in ${numFiles} files, ${numPassed} passed`,
     );
   }
   return allPassed;
