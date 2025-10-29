@@ -435,15 +435,22 @@ function reportResults(
     for (const failure of failedTest) {
       if (failure.type == "error") {
         console.log(
-          `   - ${colors.brightRed("error")}: ${failure.error.replace(/\n/g, "\n     ")
+          `   - ${colors.brightRed("error")}: ${
+            failure.error.replace(/\n/g, "\n     ")
           }`,
         );
       } else if (failure.type == "citation") {
-        const [expected, actual] = diffWithColors(failure.expected, failure.actual);
+        const [expected, actual] = diffWithColors(
+          failure.expected,
+          failure.actual,
+        );
         console.log(`   - expected citation:\n     ${expected}`);
         console.log(`     but output was:\n     ${actual}`);
       } else if (failure.type == "bibliography") {
-        const [expected, actual] = diffWithColors(failure.expected, failure.actual);
+        const [expected, actual] = diffWithColors(
+          failure.expected,
+          failure.actual,
+        );
         console.log("   - expected following bibliography:");
         console.log(expected.replace(/^- /gm, "      - "));
         console.log("     but output was:");
