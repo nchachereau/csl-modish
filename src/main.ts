@@ -333,13 +333,6 @@ async function loadTestSpecifications(testFiles: string[]) {
       const specification = new TestSpecification();
       try {
         await specification.loadFromFile(testFile);
-        if (!specification.valid) {
-          for (const err of specification.errors) {
-            console.error(err);
-          }
-          console.error("\n");
-          return [];
-        }
       } catch (err) {
         if (err instanceof Error && err.name == "NotFound") {
           console.error(`No such test file ${testFile}`);
@@ -413,7 +406,9 @@ function reportResults(
 
   const [results, failures] = resultSummary;
 
-  const checkMark = results.every(Boolean) ? colors.green("✔") : colors.red("✘");
+  const checkMark = results.length && results.every(Boolean)
+    ? colors.green("✔")
+    : colors.red("✘");
   if (verbose || failures.length) {
     console.log(` ${checkMark} ${testFile}`);
   }
@@ -423,12 +418,19 @@ function reportResults(
     console.log(`   ${passed}/${ran} tests passed`);
   }
 
+  if (results.length == 0) {
+    // no test ran, file is invalid
+    console.log(`   ${colors.brightRed("Failure")}: could not load test file.`);
+  }
+
   let previousFailedTest = 0;
   for (const failedTest of failures) {
     const testIndex = results.indexOf(false, previousFailedTest);
-    const testNumber = testIndex+1;
-    previousFailedTest = testIndex+1;
-    console.log(`   Test ${testNumber} failed:`);
+    if (testIndex >= 0) {
+      const testNumber = testIndex + 1;
+      previousFailedTest = testIndex + 1;
+      console.log(`   Test ${testNumber} failed:`);
+    }
 
     for (const failure of failedTest) {
       if (failure.type == "error") {
@@ -446,6 +448,8 @@ function reportResults(
         console.log(expected.replace(/^- /gm, "      - "));
         console.log("     but output was:");
         console.log(actual.replace(/^- /gm, "      - "));
+      } else if (failure.type == "invalid") {
+        console.log(`   ${failure.error.replace(/\n/g, "\n   ")}`);
       }
     }
   }
@@ -498,7 +502,7 @@ function runAllTests(
     }
   }
 
-  const allPassed = !passes.includes(false);
+  const allPassed = !passes.includes(false) && passes.length > 0;
 
   if (!options.quiet) {
     const checkMark = allPassed ? colors.green("✔") : colors.red("✘");

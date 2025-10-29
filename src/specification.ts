@@ -36,9 +36,16 @@ export interface ErrorFailure {
   /** A message explaining the error. */
   error: string;
 }
+/** Details of errors that prevented from loading the test specification from a file. */
+export interface ValidationFailure {
+  /** Failure type: invalid specification. */
+  type: "invalid";
+  /** A message explaining the error. */
+  error: string;
+}
 /** Details of a failed citation formatting. */
 export interface CitationFailure {
-  /** Failure type: citation */
+  /** Failure type: citation. */
   type: "citation";
   /** The formatted citation. */
   actual: string;
@@ -55,7 +62,11 @@ export interface BibliographyFailure {
   expected: string;
 }
 /** Details concerning a test failure */
-export type Failure = ErrorFailure | CitationFailure | BibliographyFailure;
+export type Failure =
+  | ErrorFailure
+  | ValidationFailure
+  | CitationFailure
+  | BibliographyFailure;
 
 /** List of results from all tests in one specification. */
 export type TestResults = boolean[];
@@ -167,23 +178,21 @@ export class TestSpecification {
       );
       if (spec === null || typeof spec != "object") {
         this.errors.push(
-          `Error encountered when loading file ${specificationFile}.\n` +
-            "Check that the contents follow the guidelines for test files.\n",
+          "Check that the contents follow the guidelines for test files.",
         );
       } else {
         this.loadFromObject(spec);
         if (!this.valid) {
           this.errors = this.errors.map((e) => ` - ${e}`);
           this.errors.unshift(
-            `Encountered error(s) when loading file ${specificationFile}.\n`,
+            "Check that the contents follow the guidelines for test files, specifically:",
           );
         }
       }
     } catch (err) {
       if (err instanceof SyntaxError) {
         this.errors.push(
-          `Error encountered when loading file ${specificationFile}.\n` +
-            "Check that the contents follow the guidelines for test files.\n\n" +
+          "Check that the contents follow the guidelines for test files.\n\n" +
             `The error was:\n ${err.message}`,
         );
       } else {
@@ -400,6 +409,17 @@ export class TestSpecification {
   runTests(items: CSL.Data[], bail: boolean = false): TestResultSummary {
     // if `tests` is not specified, assume that there is only one global test
     const tests = this._specification.tests ?? [this._specification];
+
+    if (!this.valid) {
+      const failure: Failure[] = [];
+      for (const err of this.errors) {
+        failure.push({
+          type: "invalid",
+          error: err,
+        });
+      }
+      return [[], [failure]];
+    }
 
     const results: TestResults = [];
     const failures: Failure[][] = [];
