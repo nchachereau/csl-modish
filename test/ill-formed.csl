@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info>
+    <title>Ill-formed XML file (for tests)</title>
+  </info>
+  <citation disambiguate-add-year-suffix="true">
+    <text term="ibid"
+</style>

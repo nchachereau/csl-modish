@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info>
+    <title>Invalid style (for tests)</title>
+    <id>7fe72cc2-b085-4ab9-9f88-c2170d0cc96b</id>
+    <updated>2025-10-31T15:00:00+01:00</updated>
+  </info>
+  <citation disambiguate-add-year-suffix="true">
+    <layout suffix="." delimiter="; ">
+      <choose>
+        <if position="ibid">
+          <text term="ibid"/>
+        </if>
+        <else>
+          <group delimiter=" ">
+            <names variable="author"><name form="short"/></names>
+            <!-- the date element here is lacking a "form" attribute -->
+            <date variable="issued" date-parts="year"/>
+            <group delimiter=" ">
+              <label variable="locator" form="short"/>
+              <text variable="locator"/>
+            </group>
+          </group>
+        </else>
+      </choose>
+    </layout>
+  </citation>
+  <bibliography>
+    <layout suffix=".">
+      <group delimiter=", ">
+        <names variable="author"/>
+        <choose>
+          <if type="book">
+            <text variable="title" font-style="italic"/>
+          </if>
+          <else>
+            <text variable="title"/>
+          </else>
+        </choose>
+        <!-- this date element is lacking a "form" attribute -->
+        <date variable="issued" date-parts="year"/>
+      </group>
+    </layout>
+  </bibliography>
+</style>
