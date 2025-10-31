@@ -64,7 +64,7 @@ export interface TestingCommandOptions {
  * @param options Options, passed on the command line
  */
 export async function testingCommand(
-  testFiles: string[],
+  passedTestFiles: string[],
   options: TestingCommandOptions = {
     bail: false,
     quiet: false,
@@ -74,6 +74,7 @@ export async function testingCommand(
 ) {
   let toWatch = new Set<string>();
 
+  let testFiles = passedTestFiles;
   if (testFiles.length == 0) {
     toWatch.add("tests");
 
@@ -99,7 +100,21 @@ export async function testingCommand(
     if (Deno.build.os == "windows") {
       testFiles = await expandFileArguments(testFiles);
     }
-    testFiles = testFiles.map((f) => realPathSync(f));
+    testFiles = testFiles.map((f) => {
+      try {
+        const path = realPathSync(f);
+        return path;
+      } catch (err) {
+        if (err instanceof Error && err.name == "NotFound") {
+          console.error(
+            colors.red("Error:"),
+            `Test file ${f} could not be found.\n`,
+          );
+          return "";
+        }
+      }
+    });
+    testFiles = testFiles.filter((f) => f.length > 0);
     testFiles.sort();
   }
   toWatch = toWatch.union(new Set([...testFiles]));
@@ -129,11 +144,18 @@ export async function testingCommand(
   let testSpecifications: Map<string, TestSpecification>;
   testSpecifications = await loadTestSpecifications(testFiles);
   if (testSpecifications.size === 0) {
-    console.error(
-      colors.red("Error:"),
-      "Could not find any test file. Ensure you have at least one test " +
-        "file (in YAML format) in the `tests` directory.",
-    );
+    if (passedTestFiles.length == 0) {
+      console.error(
+        colors.red("Error:"),
+        "Could not find any test file. Ensure you have at least one test " +
+          "file (in YAML format) in the `tests` directory.",
+      );
+    } else {
+      console.error(
+        colors.red("Error:"),
+        "None of the test files were found. Make sure to pass the correct path(s).",
+      );
+    }
     Deno.exitCode = 3;
     return;
   }
@@ -467,7 +489,7 @@ function reportResults(
     console.log("");
   }
   if (failures.length && options.bail) {
-    console.log(colors.red("Stopped after first failed test encountered."));
+    console.error(colors.red("Stopped after first failed test encountered."));
   }
 }
 
