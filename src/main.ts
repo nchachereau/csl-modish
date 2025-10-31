@@ -131,8 +131,8 @@ export async function testingCommand(
   if (testSpecifications.size === 0) {
     console.error(
       colors.red("Error:"),
-      "Could not load any valid test file. Ensure you have at least one test " +
-        "file (in YAML format), without errors, in the `tests` directory.",
+      "Could not find any test file. Ensure you have at least one test " +
+        "file (in YAML format) in the `tests` directory.",
     );
     Deno.exitCode = 3;
     return;
@@ -223,8 +223,10 @@ export async function testingCommand(
           watcher.close();
         }
 
-        runAllTests(testSpecifications, references, options);
-        console.log(colors.blue("\nWaiting for changes…"));
+        if (testSpecifications.size > 0) {
+          runAllTests(testSpecifications, references, options);
+          console.log(colors.blue("\nWaiting for changes…"));
+        }
       },
       300,
     );
