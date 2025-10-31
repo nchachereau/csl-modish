@@ -17,10 +17,35 @@ export interface CiteItem {
   locator?: string;
 }
 
+/** Thrown when an error occurs when loading a style. */
+export class UnloadableStyleError extends Error {
+  /** The passed style that could not be loaded. */
+  citationStyle: string;
+
+  /** Construct a new instance.
+   *
+   * @param style The CSL file that could not be loaded.
+   **/
+  constructor(style: string) {
+    const message =
+      `Failed loading the CSL style ${style}. Check that the XML is correctly formed.`;
+    super(message);
+    this.citationStyle = style;
+  }
+}
+
 /** Thrown when attempting to cite without having loaded a style. */
 export class NoStyleLoadedError extends Error {
   constructor() {
     const message = "Call loadStyle() first.";
+    super(message);
+  }
+}
+
+/** Thrown when attempting to cite or generate a bibliography with an invalid style. */
+export class StyleProcessingError extends Error {
+  constructor() {
+    const message = "Unexpected failure, the CSL style is likely invalid.";
     super(message);
   }
 }
@@ -122,7 +147,11 @@ export class Bibliographer {
       retrieveItem: (id) => this._items[id],
     };
     const style = Deno.readTextFileSync(stylePath);
-    this._processor = new citeproc.Engine(sys, style, lang);
+    try {
+      this._processor = new citeproc.Engine(sys, style, lang);
+    } catch (err) {
+      throw new UnloadableStyleError(stylePath);
+    }
   }
 
   /**
@@ -283,14 +312,18 @@ export class Bibliographer {
       citationItems: items,
       properties: { noteIndex: noteIndex },
     };
-    const [_status, results] = this._processor.processCitationCluster(
-      citation,
-      this._citations.map((c) => [c[2], c[0]]),
-      [],
-    );
-    for (const cited of results) {
-      const [pos, formatted, id] = cited;
-      this._citations[pos] = [pos + 1, formatted, id];
+    try {
+      const [_status, results] = this._processor.processCitationCluster(
+        citation,
+        this._citations.map((c) => [c[2], c[0]]),
+        [],
+      );
+      for (const cited of results) {
+        const [pos, formatted, id] = cited;
+        this._citations[pos] = [pos + 1, formatted, id];
+      }
+    } catch (err) {
+      throw new StyleProcessingError();
     }
   }
 
@@ -328,7 +361,12 @@ export class Bibliographer {
       throw new NoStyleLoadedError();
     }
 
-    const bibliography = this._processor.makeBibliography();
+    let bibliography: any;
+    try {
+      bibliography = this._processor.makeBibliography();
+    } catch (err) {
+      throw new StyleProcessingError();
+    }
     if (bibliography === false) {
       // makeBibliography returns false if the citation style does not support bibliographies
       return [];

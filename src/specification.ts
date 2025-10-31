@@ -6,7 +6,9 @@ import type * as CSL from "./csl.ts";
 import {
   type Bibliographer,
   getBibliographer,
+  StyleProcessingError,
   UnregisteredItemError,
+  UnloadableStyleError,
 } from "./bibliographer.ts";
 
 /** One test specification. */
@@ -461,6 +463,13 @@ export class TestSpecification {
             error: err.message,
           }]);
           continue;
+        } else if (err instanceof UnloadableStyleError) {
+          results.push(false);
+          failures.push([{
+            type: "error",
+            error: err.message,
+          }]);
+          continue;
         } else {
           throw err;
         }
@@ -492,13 +501,20 @@ export class TestSpecification {
               error:
                 `No reference ${err.erroneousIdentifier} was found in your CSL-JSON files.`,
             });
+          } else if (err instanceof StyleProcessingError) {
+            testCaseFailures.push({
+              type: "error",
+              error:
+                `Failed to generate citations, style ${style} is likely invalid CSL.`,
+            });
+            break;
           } else {
             throw err;
           }
         }
       }
+      const outputCitations = bibliographer.getCitations();
       if (expectedCitations) {
-        const outputCitations = bibliographer.getCitations();
         const unmatchedCitations = [];
         for (const [i, outputCitation] of outputCitations.entries()) {
           const expected = expectedCitations[i];
@@ -524,11 +540,27 @@ export class TestSpecification {
           });
         }
       }
-      if (expectedBiblio) {
-        const outputBibliography = bibliographer.getBibliography();
+      if (expectedBiblio && outputCitations.length > 0) {
+        let failedBibliography = false;
+        let outputBibliography: string[] = [];
+        try {
+          outputBibliography = bibliographer.getBibliography();
+        } catch (err) {
+          if (err instanceof StyleProcessingError) {
+            failedBibliography = true;
+            testCaseFailures.push({
+              type: "error",
+              error:
+                `Failed to generate bibliography, style ${style} is likely invalid CSL.`,
+            });
+          } else {
+            throw err;
+          }
+        }
         if (
-          expectedBiblio.length !== outputBibliography.length ||
-          !(outputBibliography.every((val, i) => val === expectedBiblio[i]))
+          !failedBibliography &&
+          (expectedBiblio.length !== outputBibliography.length ||
+            !(outputBibliography.every((val, i) => val === expectedBiblio[i])))
         ) {
           const expectedStr = expectedBiblio.map((s) => `- ${s}`).join("\n");
           const outputStr = outputBibliography.map((s) => `- ${s}`).join("\n");

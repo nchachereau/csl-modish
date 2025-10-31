@@ -4,8 +4,10 @@ import * as path from "jsr:@std/path";
 
 import {
   Bibliographer,
+  UnloadableStyleError,
   NoStyleLoadedError,
   UnregisteredItemError,
+  StyleProcessingError,
 } from "../src/bibliographer.ts";
 
 const style = path.join(import.meta.dirname, "minimal.csl");
@@ -95,6 +97,15 @@ describe("Bibliographer", () => {
     expect(citations[1]).toEqual("ebd.");
   });
 
+  it("throws a specific error when it cannot load the style", () => {
+    bibliographer = new Bibliographer();
+    expect(() => bibliographer.loadStyle(
+      path.join(import.meta.dirname, "ill-formed.csl")
+    )).toThrow(
+      UnloadableStyleError
+    );
+  });
+
   it("formats a bibliography with cited items", () => {
     bibliographer._addCitation([{ id: "Book1" }, { id: "Book2" }, {
       id: "Article1",
@@ -117,6 +128,15 @@ describe("Bibliographer", () => {
     bibliographer = new Bibliographer();
     bibliographer.registerItems(items);
     expect(() => bibliographer.getBibliography()).toThrow(NoStyleLoadedError);
+  });
+
+  it("throws a specific error when the style is invalid", () => {
+    bibliographer = new Bibliographer();
+    bibliographer.loadStyle(path.join(import.meta.dirname, "invalid.csl"));
+    bibliographer.registerItems(items);
+    expect(() => bibliographer._addCitation([{ id: "Book1" }])).toThrow(
+      StyleProcessingError,
+    );
   });
 
   it("parses citations with locators", () => {
