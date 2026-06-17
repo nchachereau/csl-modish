@@ -408,9 +408,10 @@ export class TestSpecification {
    *
    * @param items The items cited in the tests.
    * @param bail Whether to stop after the first failed test.
+   * @param checkOnly "citations" or "bibliography" to check the output only for a specific format.
    * @returns A summary of the test results.
    */
-  runTests(items: CSL.Data[], bail: boolean = false): TestResultSummary {
+  runTests(items: CSL.Data[], bail: boolean = false, checkOnly = ""): TestResultSummary {
     // if `tests` is not specified, assume that there is only one global test
     const tests = this._specification.tests ?? [this._specification];
 
@@ -519,7 +520,7 @@ export class TestSpecification {
         }
       }
       const outputCitations = bibliographer.getCitations();
-      if (expectedCitations) {
+      if (expectedCitations && checkOnly != "bibliography") {
         const unmatchedCitations = [];
         for (const [i, outputCitation] of outputCitations.entries()) {
           const expected = expectedCitations[i];
@@ -545,7 +546,7 @@ export class TestSpecification {
           });
         }
       }
-      if (expectedBiblio && outputCitations.length > 0) {
+      if (expectedBiblio && outputCitations.length > 0 && checkOnly != "citations") {
         let failedBibliography = false;
         let outputBibliography: string[] = [];
         try {

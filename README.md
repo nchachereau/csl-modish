@@ -63,8 +63,9 @@ The `modish test` command accepts the following arguments:
 
 - `-b, --bail`: Stop after the first test failure.
 - `-q, --quiet`: Suppress all normal output.
-- `--verbose`: Output results for all test files.
+- `--verbose`: Report results for all test files.
 - `-w, --watch`: Rerun tests when files change.
+- `--check-only=citations|bibliography`: Check the style output only for citations or only for bibliography.
 
 ## Bibliography Files in CSL JSON
 

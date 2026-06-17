@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import * as colors from "jsr:@std/fmt/colors";
 
 import { walk } from "jsr:@std/fs/walk";
@@ -36,6 +36,7 @@ if (import.meta.main) {
     .option("-q, --quiet", "suppress all normal output")
     .option("--verbose", "output results for all test files")
     .option("-w, --watch", "rerun tests when files change")
+    .addOption(new Option('--check-only <format>', 'only check one formatting').choices(['citations', 'bibliography']))
     .argument("[test-files...]")
     .action(testingCommand);
 
@@ -55,6 +56,8 @@ export interface TestingCommandOptions {
   verbose: boolean;
   /** rerun tests when files change */
   watch: boolean;
+  /** only check citation/bibliography formatting */
+  checkOnly: string;
 }
 
 /**
@@ -70,6 +73,7 @@ export async function testingCommand(
     quiet: false,
     verbose: false,
     watch: false,
+    checkOnly: "",
   },
 ) {
   let toWatch = new Set<string>();
@@ -517,7 +521,7 @@ function printCallForBugReport() {
  * @param testSpecifications A mapping of strings (test file paths) to
  *   TestSpecification objects.
  * @param references An Map of path of each CSL-JSON file to its items.
- * @param options Options defining how much to display.
+ * @param options Options defining how much to display and what to check.
  * @return Whether all tests passed.
  */
 function runAllTests(
@@ -529,7 +533,7 @@ function runAllTests(
   for (const [testFile, specification] of testSpecifications.entries()) {
     let referenceArray: CSL.Data[] = [];
     referenceArray = referenceArray.concat(...references.values());
-    const resultSummary = specification.runTests(referenceArray, options.bail);
+    const resultSummary = specification.runTests(referenceArray, options.bail, options.checkOnly);
     reportResults(testFile, resultSummary, options);
     const passed = resultSummary[0];
     passes.push(...passed);

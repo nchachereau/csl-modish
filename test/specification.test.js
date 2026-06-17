@@ -1064,4 +1064,109 @@ describe("runTests()", () => {
     expect(results).toMatchObject([true, true, true]);
   });
 
+  it("skips bibliography check when asked to only check citations", () => {
+    const input = ["Book1", "Book2"];
+    const citations = ["Smith 2024a.", "Smith 2024b."];
+    const bibliography = ["Jane Doe, Book2, 1990.", "John Smith, Book1, 2024."];
+    const bibliographerLoadStyleStub = stub(
+      Bibliographer.prototype,
+      "loadStyle",
+      returnsNext([true]),
+    );
+    const citeStub = stub(
+      Bibliographer.prototype,
+      "addCitation",
+      returnsNext([[], []]),
+    );
+    const getCitationsStub = stub(
+      Bibliographer.prototype,
+      "getCitations",
+      returnsNext([
+        citations,
+      ]),
+    );
+    const getBibliographyStub = stub(
+      Bibliographer.prototype,
+      "getBibliography",
+      returnsNext([
+        ["John Doe, Book99, 1990.", "John Doe, Book100, 2024."],
+      ]),
+    );
+    const _spec = {
+      style: "test/minimal.csl",
+      input: input,
+      citations: citations,
+      bibliography: bibliography,
+    };
+
+    let results, failures, names;
+    try {
+      const spec = new TestSpecification();
+      spec.loadFromObject(_spec);
+      [results, failures, names] = spec.runTests([], false, "citations");
+    } finally {
+      bibliographerLoadStyleStub.restore();
+      citeStub.restore();
+      getCitationsStub.restore();
+      getBibliographyStub.restore();
+    }
+    // expect test to pass in spite of bad bibliography
+    expect(results).toMatchObject([true]);
+    expect(failures).toHaveLength(0);
+    assertSpyCalls(getCitationsStub, 1);
+    assertSpyCalls(getBibliographyStub, 0);
+  });
+
+  it("skips citations check when asked to only check bibliography", () => {
+    const input = ["Book1", "Book2"];
+    const citations = ["Smith 2024a.", "Smith 2024b."];
+    const bibliography = ["Jane Doe, Book2, 1990.", "John Smith, Book1, 2024."];
+    const bibliographerLoadStyleStub = stub(
+      Bibliographer.prototype,
+      "loadStyle",
+      returnsNext([true]),
+    );
+    const citeStub = stub(
+      Bibliographer.prototype,
+      "addCitation",
+      returnsNext([[], []]),
+    );
+    const getCitationsStub = stub(
+      Bibliographer.prototype,
+      "getCitations",
+      returnsNext([
+        ["Smith (2024a)", "Smith (2024b)"],
+      ]),
+    );
+    const getBibliographyStub = stub(
+      Bibliographer.prototype,
+      "getBibliography",
+      returnsNext([
+        bibliography,
+      ]),
+    );
+    const _spec = {
+      style: "test/minimal.csl",
+      input: input,
+      citations: citations,
+      bibliography: bibliography,
+    };
+
+    let results, failures, names;
+    try {
+      const spec = new TestSpecification();
+      spec.loadFromObject(_spec);
+      [results, failures, names] = spec.runTests([], false, "bibliography");
+    } finally {
+      bibliographerLoadStyleStub.restore();
+      citeStub.restore();
+      getCitationsStub.restore();
+      getBibliographyStub.restore();
+    }
+    // expect test to pass in spite of bad citations
+    expect(results).toMatchObject([true]);
+    expect(failures).toHaveLength(0);
+    assertSpyCalls(getBibliographyStub, 1);
+  });
+
 });
