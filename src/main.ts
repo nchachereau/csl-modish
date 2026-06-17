@@ -111,6 +111,9 @@ export async function testingCommand(
             `Test file ${f} could not be found.\n`,
           );
           return "";
+        } else {
+          printCallForBugReport();
+          throw err;
         }
       }
     });
