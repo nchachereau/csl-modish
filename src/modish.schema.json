@@ -4,6 +4,11 @@
   "title": "Modish CSL Test",
   "description": "Test file specifying how citations and/or bibliography should be formatted by a CSL style",
   "$defs": {
+    "name": {
+      "description": "Optional name for the test",
+      "type": "string",
+      "minLength": 1
+    },
     "style": {
       "description": "Relative path to CSL file to be tested",
       "type": "string"
@@ -36,6 +41,7 @@
   },
   "type": "object",
   "properties": {
+    "name": { "$ref": "#/$defs/name" },
     "style": { "$ref": "#/$defs/style" },
     "lang": { "$ref": "#/$defs/lang" },
     "input": { "$ref": "#/$defs/input" },
@@ -46,6 +52,7 @@
       "items": {
         "type": "object",
         "properties": {
+          "name": { "$ref": "#/$defs/name" },
           "style": { "$ref": "#/$defs/style" },
           "lang": { "$ref": "#/$defs/lang" },
           "input": { "$ref": "#/$defs/input" },

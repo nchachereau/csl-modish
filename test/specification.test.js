@@ -372,11 +372,11 @@ describe("runTests()", () => {
       citations: citations,
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -417,11 +417,11 @@ describe("runTests()", () => {
       citations: citations,
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -470,11 +470,11 @@ describe("runTests()", () => {
       bibliography: bibliography,
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -518,11 +518,11 @@ describe("runTests()", () => {
       bibliography: bibliography,
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -545,7 +545,7 @@ describe("runTests()", () => {
 
     const spec = new TestSpecification();
     spec.loadFromObject(_spec);
-    const [results, failures] = spec.runTests([]);
+    const [results, failures, names] = spec.runTests([]);
 
     expect(results).toMatchObject([false]);
     expect(failures[0][0].type).toEqual("error");
@@ -580,11 +580,11 @@ describe("runTests()", () => {
     );
     const _spec = { style: "test/minimal.csl", input: input };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -650,11 +650,11 @@ describe("runTests()", () => {
       input: ["Book1"],
       citations: ["Smith 2012."],
     };
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       citeStub.restore();
     }
@@ -681,11 +681,11 @@ describe("runTests()", () => {
       citations: ["Smith 2012."],
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -728,11 +728,11 @@ describe("runTests()", () => {
       ],
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -776,11 +776,11 @@ describe("runTests()", () => {
       tests: [{ style: styleName, input: input, citations: citations }],
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -821,11 +821,11 @@ describe("runTests()", () => {
       ],
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -871,11 +871,11 @@ describe("runTests()", () => {
       tests: [{ input: input, citations: citations }],
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
-      [results, failures] = spec.runTests([]);
+      [results, failures, names] = spec.runTests([]);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -915,12 +915,12 @@ describe("runTests()", () => {
       ]
     };
 
-    let results, failures;
+    let results, failures, names;
     try {
       const spec = new TestSpecification();
       spec.loadFromObject(_spec);
       // pass bail=true
-      [results, failures] = spec.runTests([], true);
+      [results, failures, names] = spec.runTests([], true);
     } finally {
       bibliographerLoadStyleStub.restore();
       citeStub.restore();
@@ -934,6 +934,134 @@ describe("runTests()", () => {
       expected: "Smith 2012.",
       actual: "Doe 2012.",
     });
+  });
+
+  it("preserves test names in results", () => {
+    const _spec = {
+      style: "test/minimal.csl",
+      input: ["Book1"],
+      citations: ["Smith 2024."],
+      name: "Global test with name",
+    };
+    const bibliographerLoadStyleStub = stub(
+      Bibliographer.prototype,
+      "loadStyle",
+      returnsNext([true]),
+    );
+    const citeStub = stub(
+      Bibliographer.prototype,
+      "addCitation",
+      returnsNext([[], []]),
+    );
+    const getCitationsStub = stub(
+      Bibliographer.prototype,
+      "getCitations",
+      returnsNext([
+        ["Smith 2024."],
+      ]),
+    );
+
+    let results, failures, names;
+    try {
+      const spec = new TestSpecification();
+      spec.loadFromObject(_spec);
+      [results, failures, names] = spec.runTests([]);
+    } finally {
+      bibliographerLoadStyleStub.restore();
+      citeStub.restore();
+      getCitationsStub.restore();
+    }
+
+    expect(names).toHaveLength(1);
+    expect(names[0]).toBe("Global test with name");
+    expect(results).toMatchObject([true]);
+  });
+
+  it("handles unnamed tests in results", () => {
+    const _spec = {
+      style: "test/minimal.csl",
+      input: ["Book1"],
+      citations: ["Smith 2024."],
+    };
+    const bibliographerLoadStyleStub = stub(
+      Bibliographer.prototype,
+      "loadStyle",
+      returnsNext([true]),
+    );
+    const citeStub = stub(
+      Bibliographer.prototype,
+      "addCitation",
+      returnsNext([[], []]),
+    );
+    const getCitationsStub = stub(
+      Bibliographer.prototype,
+      "getCitations",
+      returnsNext([
+        ["Smith 2024."],
+      ]),
+    );
+
+    let results, failures, names;
+    try {
+      const spec = new TestSpecification();
+      spec.loadFromObject(_spec);
+      [results, failures, names] = spec.runTests([]);
+    } finally {
+      bibliographerLoadStyleStub.restore();
+      citeStub.restore();
+      getCitationsStub.restore();
+    }
+
+    expect(names).toHaveLength(1);
+    expect(names[0]).toBe("");
+    expect(results).toMatchObject([true]);
+  });
+
+  it("preserves test names in test array", () => {
+    const _spec = {
+      style: "test/minimal.csl",
+      tests: [
+        { input: ["Book1"], citations: ["Smith 2024."], name: "First named test" },
+        { input: ["Book1"], citations: ["Smith 2024."] },
+        { input: ["Book1"], citations: ["Smith 2024."], name: "Third named test" },
+      ],
+    };
+    const bibliographerLoadStyleStub = stub(
+      Bibliographer.prototype,
+      "loadStyle",
+      returnsNext([true, true, true]),
+    );
+    const citeStub = stub(
+      Bibliographer.prototype,
+      "addCitation",
+      returnsNext([[], [], [], [], [], []]),
+    );
+    const getCitationsStub = stub(
+      Bibliographer.prototype,
+      "getCitations",
+      returnsNext([
+        ["Smith 2024."],
+        ["Smith 2024."],
+        ["Smith 2024."],
+      ]),
+    );
+
+    let results, failures, names;
+    try {
+      const spec = new TestSpecification();
+      spec.loadFromObject(_spec);
+      [results, failures, names] = spec.runTests([]);
+    } finally {
+      bibliographerLoadStyleStub.restore();
+      citeStub.restore();
+      getCitationsStub.restore();
+    }
+
+    expect(names).toHaveLength(3);
+    expect(names[0]).toBe("First named test");
+    expect(names[1]).toBe("");
+    expect(names[2]).toBe("Third named test");
+    expect(results).toMatchObject([true, true, true]);
   });
 
 });

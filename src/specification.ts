@@ -13,6 +13,8 @@ import {
 
 /** One test specification. */
 export interface SingleTestSpecification {
+  /** Name of the test (optional). */
+  name?: string;
   /** Path to the CSL file to test. */
   style?: string;
   /** Locale to use for this test. */
@@ -74,7 +76,7 @@ export type Failure =
 export type TestResults = boolean[];
 
 /** Results from running one test specification. */
-export type TestResultSummary = [TestResults, Failure[][]];
+export type TestResultSummary = [TestResults, Failure[][], string[]];
 
 function makeOrdinal(n: number): string {
   // we assume that n < 111
@@ -420,15 +422,18 @@ export class TestSpecification {
           error: err,
         });
       }
-      return [[], [failure]];
+      return [[], [failure], []];
     }
 
     const results: TestResults = [];
     const failures: Failure[][] = [];
+    const names: string[] = [];
     for (const testCase of tests) {
       if (bail && failures.length > 0) {
         break;
       }
+
+      names.push(testCase.name ?? "");
 
       // if the test case does not specify the input, use the global definition
       const inputs = testCase.input ?? this._specification.input;
@@ -578,6 +583,6 @@ export class TestSpecification {
         results.push(true);
       }
     }
-    return [results, failures];
+    return [results, failures, names];
   }
 }

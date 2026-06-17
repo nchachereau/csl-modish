@@ -431,7 +431,7 @@ function reportResults(
   }
   const verbose = (!quiet && options.verbose) ? true : false;
 
-  const [results, failures] = resultSummary;
+  const [results, failures, names] = resultSummary;
 
   const checkMark = results.length && results.every(Boolean)
     ? colors.green("✔")
@@ -456,7 +456,9 @@ function reportResults(
     if (testIndex >= 0) {
       const testNumber = testIndex + 1;
       previousFailedTest = testIndex + 1;
-      console.log(`   Test ${testNumber} failed:`);
+      const testName = names[testIndex];
+      const testLabel = testName ? `Test ${testNumber} "${testName}"` : `Test ${testNumber}`;
+      console.log(`   ${testLabel} failed:`);
     }
 
     for (const failure of failedTest) {
